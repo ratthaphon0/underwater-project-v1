@@ -1,0 +1,19 @@
+# --- Dependency & Build Files ---
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Environment Variables ---
+.env
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+
+# --- Docker Data ---
+db_data/
+minio_data/
