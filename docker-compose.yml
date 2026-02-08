@@ -24,8 +24,8 @@ services:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: 1
+            - driver: ${GPU_DRIVER:-none}
+              count: ${GPU_COUNT:-0}
               capabilities: [gpu]
 
   db:
