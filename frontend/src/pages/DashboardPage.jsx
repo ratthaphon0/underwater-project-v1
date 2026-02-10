@@ -1,132 +1,123 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
-import { Activity, Droplets, Thermometer, Waves, Camera, MapPin, AlertTriangle } from 'lucide-react';
+import { Activity, Droplets, Thermometer, Waves, Camera, AlertTriangle } from 'lucide-react';
 
-const Dashboard = () => {
-  // สมมติสถานะข้อมูล (ในงานจริงจะใช้ useEffect ดึงจาก API)
-  const [telemetry, setTelemetry] = useState([]);
-  const [session, setSession] = useState({ location_name: 'ลุ่มแม่น้ำเจ้าพระยา', status: 'Active' });
-  const [fishStats, setFishStats] = useState({ total: 0, healthy: 0, warning: 0 });
-
-  // Mock Data สำหรับแสดงผลกราฟ
-  const mockData = [
-    { time: '10:00', temp: 28.5, ph: 7.2, do: 5.4, fish: 12 },
-    { time: '10:05', temp: 28.7, ph: 7.1, do: 5.2, fish: 8 },
-    { time: '10:10', temp: 29.1, ph: 6.9, do: 4.8, fish: 15 },
-    { time: '10:15', temp: 28.9, ph: 7.0, do: 5.0, fish: 22 },
-  ];
+const DashboardPage = ({ telemetry }) => {
+  // ดึงข้อมูลจาก props telemetry ที่ส่งมาจาก App.jsx
+  // สมมติว่าโครงสร้างคือ { data: [...], latest: {...}, status: 'connected' }
+  const data = telemetry?.data || [];
+  const latest = telemetry?.latest || {};
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen font-sans">
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Water Quality Monitoring</h1>
-          <p className="text-slate-500 flex items-center gap-1">
-            <MapPin size={16} /> Location: {session.location_name}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold flex items-center gap-2">
-            <Activity size={16} /> Session: Running
-          </span>
+    <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+      
+      {/* 1. Status & Overview */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <Activity className="text-blue-500" /> Dashboard
+        </h2>
+        <div className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+          Session ID: {latest.session_id ? latest.session_id.slice(0,8) : 'No Active Session'}
         </div>
       </div>
 
-      {/* Stats Cards (KPIs) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Temperature" value="28.5°C" icon={<Thermometer className="text-orange-500" />} color="bg-orange-50" />
-        <StatCard title="pH Level" value="7.2" icon={<Droplets className="text-blue-500" />} color="bg-blue-50" />
-        <StatCard title="Dissolved Oxygen" value="5.4 mg/L" icon={<Waves className="text-cyan-500" />} color="bg-cyan-50" />
-        <StatCard title="Fish Count (AI)" value="57" icon={<Camera className="text-purple-500" />} color="bg-purple-50" />
+      {/* 2. Real-time Cards (Mapping from water_telemetry) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          title="Temp (Celsius)" 
+          value={`${latest.temperature ?? '--'}°C`} 
+          icon={<Thermometer className="text-orange-500" />} 
+          color="bg-orange-50 dark:bg-orange-900/20" 
+        />
+        <StatCard 
+          title="pH Level" 
+          value={latest.ph ?? '--'} 
+          icon={<Droplets className="text-blue-500" />} 
+          color="bg-blue-50 dark:bg-blue-900/20" 
+        />
+        <StatCard 
+          title="Dissolved Oxygen" 
+          value={`${latest.dissolved_oxygen ?? '--'} mg/L`} 
+          icon={<Waves className="text-cyan-500" />} 
+          color="bg-cyan-50 dark:bg-cyan-900/20" 
+        />
+        <StatCard 
+          title="Turbidity" 
+          value={`${latest.turbidity ?? '--'} NTU`} 
+          icon={<Camera className="text-purple-500" />} 
+          color="bg-purple-50 dark:bg-purple-900/20" 
+        />
       </div>
 
+      {/* 3. Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Main Chart - Water Quality Trends */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold mb-4 text-slate-700">Water Telemetry Trends</h3>
-          <div className="h-80">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <h3 className="font-bold mb-6">Water Quality Trends</h3>
+          <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockData}>
+              <AreaChart data={data}>
                 <defs>
-                  <linearGradient id="colorDo" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                  <linearGradient id="colorPh" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="time" stroke="#94a3b8" />
-                <YAxis stroke="#94a3b8" />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="timestamp" hide />
+                <YAxis stroke="#94a3b8" fontSize={12} />
                 <Tooltip />
-                <Area type="monotone" dataKey="do" stroke="#06b6d4" fillOpacity={1} fill="url(#colorDo)" name="Oxygen (DO)" />
-                <Line type="monotone" dataKey="temp" stroke="#f59e0b" name="Temp" />
+                <Area type="monotone" dataKey="ph" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPh)" name="pH Level" />
+                <Line type="monotone" dataKey="temperature" stroke="#f59e0b" dot={false} name="Temp" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* AI Fish Detection & Health Status */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold mb-4 text-slate-700">AI Vision Results</h3>
+        {/* 4. AI Vision Integration (fish_detections) */}
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <h3 className="font-bold mb-4">AI Detection Results</h3>
           <div className="space-y-4">
-            <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-slate-600">Health Status</span>
-                <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded text-bold uppercase">Optimal</span>
-              </div>
-              <p className="text-2xl font-bold text-slate-800 underline decoration-green-400">Normal</p>
+            <div className="aspect-video bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 relative overflow-hidden">
+               {/* ใส่รูปภาพจาก raw_image_path หรือ enhanced_image_path */}
+               <span className="text-slate-400 text-sm">Live Camera Feed</span>
             </div>
-
-            <div className="mt-6">
-              <h4 className="text-sm font-semibold text-slate-500 mb-3">Recent Detections</h4>
-              {/* ส่วนนี้ Map ข้อมูลจาก fish_detections */}
-              {[1, 2].map((i) => (
-                <div key={i} className="flex gap-3 items-center mb-3 p-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200">
-                  <div className="w-16 h-12 bg-slate-200 rounded overflow-hidden">
-                     {/* ตรงนี้จะแสดง raw_image_path หรือ enhanced_image_path */}
-                     <div className="w-full h-full bg-slate-300 flex items-center justify-center"><Camera size={14} /></div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">Tilapia Detected ({i*4} qty)</p>
-                    <p className="text-xs text-slate-400">10:15:32 AM</p>
-                  </div>
-                </div>
-              ))}
+            <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+              <span className="text-sm font-medium">Fish Count</span>
+              <span className="text-2xl font-black text-blue-600">12</span>
             </div>
           </div>
         </div>
-
       </div>
 
-      {/* Alert Section from predictions/standards */}
-      <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-        <AlertTriangle className="text-amber-600 shrink-0" />
+      {/* 5. Alerts based on tilapia_lifecycle_standards */}
+      <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-4 rounded-xl flex gap-3">
+        <AlertTriangle className="text-red-500 shrink-0" />
         <div>
-          <h4 className="text-amber-800 font-bold text-sm">Prediction Alert</h4>
-          <p className="text-amber-700 text-xs">
-            Based on current trends, Dissolved Oxygen (DO) might drop below 3.0 mg/L (Standard threshold for Adult Tilapia) within the next 2 hours.
+          <h4 className="text-red-800 dark:text-red-400 font-bold text-sm">Standard Alert</h4>
+          <p className="text-red-700 dark:text-red-300 text-xs">
+            Current pH level (6.2) is approaching the minimum threshold (6.0) for Adult Tilapia.
           </p>
         </div>
       </div>
-    </div>
+
+    </main>
   );
 };
 
 const StatCard = ({ title, value, icon, color }) => (
-  <div className={`p-5 rounded-xl border border-slate-100 shadow-sm bg-white`}>
-    <div className="flex justify-between items-start">
+  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
+    <div className="flex items-start justify-between">
       <div>
-        <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-        <h2 className="text-2xl font-bold text-slate-800">{value}</h2>
+        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{title}</p>
+        <h3 className="text-2xl font-bold mt-1">{value}</h3>
       </div>
-      <div className={`p-2 rounded-lg ${color}`}>
+      <div className={`p-2 rounded-xl ${color}`}>
         {icon}
       </div>
     </div>
   </div>
 );
 
-export default Dashboard;
+export default DashboardPage;
