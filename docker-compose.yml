@@ -20,13 +20,7 @@ services:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       - NVIDIA_VISIBLE_DEVICES=all
     depends_on: [db, minio]
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+
 
   db:
     image: postgres:16-alpine
@@ -44,6 +38,12 @@ services:
     command: server /data --console-address ":9001"
     ports: ["9000:9000", "9001:9001"]
     volumes: ["minio_data:/data"]
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
 
 volumes:
   db_data:
