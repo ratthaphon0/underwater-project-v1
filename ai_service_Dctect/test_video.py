@@ -2,7 +2,7 @@ from ultralytics import YOLO
 import os
 
 # 1. ระบุตำแหน่งไฟล์โมเดล (ใช้ Path เดิมที่หาเจอเมื่อกี้)
-MODEL_PATH = r'E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\runs\detect\runs\detect\tilapia_model\weights\best.pt'
+MODEL_PATH = r'C:\Users\hemux\OneDrive\Desktop\Newsubmarin\underwater-project-v1\ai_service_Dctect\runs\detect\predict3\fish_video.avi'
 
 # 2. ระบุตำแหน่งไฟล์วิดีโอที่จะทดสอบ
 # *** ให้คุณเอารูปแบบไฟล์วิดีโอ (.mp4) มาวางในโฟลเดอร์เดียวกับไฟล์นี้ แล้วแก้ชื่อตรงนี้ครับ ***
