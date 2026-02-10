@@ -1,0 +1,7 @@
+names:
+- Tilapia
+nc: 1
+path: E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\datasets
+test: E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\datasets\test\images
+train: E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\datasets\train\images
+val: E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\datasets\valid\images
