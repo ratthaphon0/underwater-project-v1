@@ -1,4 +1,5 @@
 import Navbar from "../layout/Navbar.jsx"
+import Compass from "../features/dashboard/Compass.jsx"
 
 export default function DashboardPage() {
     return (
@@ -6,6 +7,7 @@ export default function DashboardPage() {
             <main className="flex-1 bg-gray-100 p-4">
                 <h1 className="text-xl font-bold">Dashboard</h1>
             </main>
+            <Compass />
 
             <Navbar />
         </div>
