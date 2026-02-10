@@ -39,6 +39,12 @@ services:
     ports: ["9000:9000", "9001:9001"]
     volumes: ["minio_data:/data"]
 
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
 volumes:
   db_data:
   minio_data:
