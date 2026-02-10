@@ -4,18 +4,23 @@
 
 /* CSS Animation สำหรับเส้นสแกน (Scanline) */
 @keyframes scan {
-    0% { top: 0; }
-    100% { top: 100%; }
+  0% {
+    top: 0;
+  }
+
+  100% {
+    top: 100%;
+  }
 }
 
 .scanline {
-    position: absolute;
-    width: 100%; 
-    height: 2px;
-    background: rgba(0, 242, 255, 0.2);
-    animation: scan 4s linear infinite;
-    pointer-events: none;
-    z-index: 10;
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 242, 255, 0.2);
+  animation: scan 4s linear infinite;
+  pointer-events: none;
+  z-index: 10;
 }
 
 /* ปรับแต่ง Scrollbar ให้ดูดุดัน เข้ากับธีมดำ */
@@ -23,21 +28,32 @@
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #0a0f18; 
+  background: #0a0f18;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #161e2d; 
+  background: #161e2d;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #00f2ff; 
+  background: #00f2ff;
 }
 
 /* บังคับให้เต็มจอเสมอ */
-body, html, #root {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden; /* กัน Scroll แนวนอนเกิน */
+body,
+html,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* กัน Scroll แนวนอนเกิน */
+}
+
+/* Button Utility Class */
+.btn-control {
+  @apply w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 hover:bg-primary/20 flex items-center justify-center transition-all border border-slate-200 dark:border-slate-700 active:scale-95;
 }
