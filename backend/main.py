@@ -1,43 +1,21 @@
-import os
-from fastapi import FastAPI, Depends
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.ext.declarative import declarative_base
+from fastapi import FastAPI
 import torch
 
-# ========== DATABASE SETUP ==========
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://user:password@db:5432/underwater_db"
-)
+from database import engine, Base
+from routes import router
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    echo=False
-)
-
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
-
-Base = declarative_base()
-
-# ========== DEPENDENCY ==========
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# ========== CREATE TABLES ==========
+Base.metadata.create_all(bind=engine)
 
 # ========== FASTAPI APP ==========
-app = FastAPI()
+app = FastAPI(title="Underwater AI Backend", version="1.0.0")
 
+# Include routes
+app.include_router(router)
+
+# ========== ROOT ENDPOINT ==========
 @app.get("/")
-def read_root(db: Session = Depends(get_db)):
+def read_root():
     gpu_status = torch.cuda.is_available()
     return {
         "message": "Underwater AI Backend is Running!",
@@ -46,24 +24,9 @@ def read_root(db: Session = Depends(get_db)):
         "database": "Connected ✓"
     }
 
-@app.get("/health")
-def health_check(db: Session = Depends(get_db)):
-    try:
-        db.execute("SELECT 1")
-        return {
-            "status": "✓ OK",
-            "database": "Connected",
-            "gpu": "Available" if torch.cuda.is_available() else "Not Available"
-        }
-    except Exception as e:
-        return {
-            "status": "✗ Error",
-            "error": str(e)
-        }
-
+# ========== STARTUP/SHUTDOWN ==========
 @app.on_event("startup")
 async def startup():
-    Base.metadata.create_all(bind=engine)
     print("✓ Database connected and tables created")
 
 @app.on_event("shutdown")
