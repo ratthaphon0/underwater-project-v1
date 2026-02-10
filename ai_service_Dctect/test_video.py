@@ -60,7 +60,7 @@ def main():
 
         # ให้ AI ตรวจจับ
         # conf=0.5 คือต้องมั่นใจ 50% ขึ้นไปถึงจะจับ
-        results = model.predict(frame, conf=0.5, verbose=False)
+        results = model.predict(frame, conf=0.25, verbose=False)
 
         # วาดกรอบลงบนภาพ
         annotated_frame = results[0].plot()
