@@ -51,12 +51,14 @@ CREATE TABLE IF NOT EXISTS fish_detections (
 -- =============================================
 CREATE TABLE IF NOT EXISTS water_predictions (
     id BIGSERIAL PRIMARY KEY,
+    session_id UUID NOT NULL, -- ✅ 1. เพิ่มบรรทัดนี้ (เพื่อเก็บ ID การเดินทาง)
     base_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     predict_for_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     parameter_name VARCHAR(50) NOT NULL,
     predicted_value FLOAT NOT NULL,
     confidence_interval FLOAT,
-    model_version VARCHAR(50)
+    model_version VARCHAR(50),
+    CONSTRAINT fk_session_predictions FOREIGN KEY (session_id) REFERENCES monitoring_sessions(id) ON DELETE CASCADE
 );
 
 -- =============================================
