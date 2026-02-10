@@ -17,3 +17,6 @@ Thumbs.db
 # --- Docker Data ---
 db_data/
 minio_data/
+
+# --- Editor Config ---
+.vscode/
