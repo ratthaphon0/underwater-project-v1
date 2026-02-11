@@ -20,13 +20,13 @@ services:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       - NVIDIA_VISIBLE_DEVICES=all
     depends_on: [db, minio]
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: ${GPU_DRIVER:-none}
-              count: ${GPU_COUNT:-0}
-              capabilities: [gpu]
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: ${GPU_DRIVER:-none}
+#              count: ${GPU_COUNT:-0}
+#              capabilities: [gpu]
 
   db:
     image: postgres:16-alpine
