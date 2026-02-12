@@ -1,10 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from database import get_db
-from models import Sensor, UnderwaterData
-from schemas import SensorCreate, SensorResponse, ReadingCreate, ReadingResponse
+from backend.database import get_db
+from backend.models import MonitoringSession, WaterTelemetry, FishDetection
+from backend.schemas import (
+    MonitoringSessionCreate, MonitoringSessionResponse,
+    WaterTelemetryCreate, WaterTelemetryResponse,
+    FishDetectionCreate, FishDetectionResponse
+)
 from typing import List
+from uuid import UUID
 
 router = APIRouter()
 
@@ -16,65 +21,59 @@ def health_check():
     return {"status": "OK"}
 
 # ===============================
-# SENSOR ROUTES
+# SESSION ROUTES
 # ===============================
-@router.post("/sensors", response_model=SensorResponse)
-def create_sensor(sensor: SensorCreate, db: Session = Depends(get_db)):
-    db_sensor = Sensor(**sensor.dict())
-
+@router.post("/sessions", response_model=MonitoringSessionResponse)
+def create_session(session: MonitoringSessionCreate, db: Session = Depends(get_db)):
+    db_session = MonitoringSession(**session.model_dump())
     try:
-        db.add(db_sensor)
+        db.add(db_session)
         db.commit()
-        db.refresh(db_sensor)
-        return db_sensor
-    except SQLAlchemyError:
+        db.refresh(db_session)
+        return db_session
+    except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-
-@router.get("/sensors", response_model=List[SensorResponse])
-def get_sensors(db: Session = Depends(get_db)):
-    return db.query(Sensor).all()
-
+@router.get("/sessions", response_model=List[MonitoringSessionResponse])
+def get_sessions(db: Session = Depends(get_db)):
+    return db.query(MonitoringSession).all()
 
 # ===============================
-# READING ROUTES
+# TELEMETRY ROUTES
 # ===============================
-@router.post("/readings", response_model=ReadingResponse)
-def create_reading(reading: ReadingCreate, db: Session = Depends(get_db)):
+@router.post("/telemetry", response_model=WaterTelemetryResponse)
+def create_telemetry(data: WaterTelemetryCreate, db: Session = Depends(get_db)):
+    # Check if session exists
+    session = db.query(MonitoringSession).filter(MonitoringSession.id == data.session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
 
-    # เช็คก่อนว่า sensor มีจริงไหม
-    sensor = db.query(Sensor).filter(Sensor.sensor_id == reading.sensor_id).first()
-    if not sensor:
-        raise HTTPException(status_code=404, detail="Sensor not found")
-
-    db_reading = UnderwaterData(**reading.dict())
-
+    db_telemetry = WaterTelemetry(**data.model_dump())
     try:
-        db.add(db_reading)
+        db.add(db_telemetry)
         db.commit()
-        db.refresh(db_reading)
-        return db_reading
-    except SQLAlchemyError:
+        db.refresh(db_telemetry)
+        return db_telemetry
+    except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Database error")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+@router.get("/telemetry/{session_id}", response_model=List[WaterTelemetryResponse])
+def get_telemetry_by_session(session_id: UUID, db: Session = Depends(get_db)):
+    return db.query(WaterTelemetry).filter(WaterTelemetry.session_id == session_id).all()
 
-@router.get("/readings", response_model=List[ReadingResponse])
-def get_readings(limit: int = 100, db: Session = Depends(get_db)):
-    return (
-        db.query(UnderwaterData)
-        .order_by(UnderwaterData.timestamp.desc())
-        .limit(limit)
-        .all()
-    )
-
-
-@router.get("/readings/{sensor_id}", response_model=List[ReadingResponse])
-def get_readings_by_sensor(sensor_id: str, db: Session = Depends(get_db)):
-    return (
-        db.query(UnderwaterData)
-        .filter(UnderwaterData.sensor_id == sensor_id)
-        .order_by(UnderwaterData.timestamp.desc())
-        .all()
-    )
+# ===============================
+# FISH DETECTION ROUTES
+# ===============================
+@router.post("/detections", response_model=FishDetectionResponse)
+def create_detection(detection: FishDetectionCreate, db: Session = Depends(get_db)):
+    db_detection = FishDetection(**detection.model_dump())
+    try:
+        db.add(db_detection)
+        db.commit()
+        db.refresh(db_detection)
+        return db_detection
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

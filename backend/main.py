@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 import torch
 
-from database import engine, Base
-from routes import router
+from backend.database import engine, Base
+from backend.routes import router
+
 
 # ========== CREATE TABLES ==========
 Base.metadata.create_all(bind=engine)

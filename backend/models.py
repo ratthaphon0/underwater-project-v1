@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
-from database import Base
+from backend.database import Base
 
 # ========== ORM MODELS ==========
 
@@ -36,10 +36,10 @@ class WaterTelemetry(Base):
     depth = Column(Float, nullable=True)
     
     # Water Quality
-    temp = Column(Float, nullable=True)
+    temperature = Column(Float, nullable=True)
     ph = Column(Float, nullable=True)
-    do_level = Column(Float, nullable=True)
-    ec_value = Column(Float, nullable=True)
+    dissolved_oxygen = Column(Float, nullable=True)
+    ec_tds = Column(Float, nullable=True)
     turbidity = Column(Float, nullable=True)
     
     # Relationships
