@@ -36,12 +36,8 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-<<<<<<< refs/remotes/origin/dev
-    ports: ["5433:5432"]
-=======
     ports:
       - "5433:5432" # Forward พอร์ตภายนอก 5433 เข้าไปที่ 5432 ใน Container
->>>>>>> Update DB port to 5433 and configure MinIO
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
