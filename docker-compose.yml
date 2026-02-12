@@ -36,12 +36,8 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-<<<<<<< HEAD
-    ports: ["5433:5432"]
-=======
     ports:
       - "5433:5432" # Forward พอร์ตภายนอก 5433 เข้าไปที่ 5432 ใน Container
->>>>>>> 60184164388dd0a45baf1959733596ead9c7885d
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d

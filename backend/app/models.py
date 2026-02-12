@@ -33,9 +33,10 @@ class WaterTelemetry(Base):
     depth = Column(Float)
 
     # Water Quality
-    temp = Column(Float)
+    temperature = Column(Float)
     ph = Column(Float)
-    do_level = Column(Float)
+    dissolved_oxygen = Column(Float)
+    ec_tds = Column(Float) # ค่าความนำไฟฟ้า
     turbidity = Column(Float) # ความขุ่น
 
     session = relationship("MonitoringSession", back_populates="telemetry_logs")

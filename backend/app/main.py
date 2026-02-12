@@ -85,9 +85,10 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
         "system_status": "ONLINE",
         "telemetry": {
             "depth": telemetry.depth if telemetry else 0.0,
-            "temp": telemetry.temp if telemetry else 0.0,
+            "temp": telemetry.temperature if telemetry else 0.0,
             "ph": telemetry.ph if telemetry else 0.0,
-            "do": telemetry.do_level if telemetry else 0.0,
+            "do": telemetry.dissolved_oxygen if telemetry else 0.0,
+            "ec": telemetry.ec_tds if telemetry else 0.0,
             "turbidity": telemetry.turbidity if telemetry else 0.0,
         },
         "ai_vision": {

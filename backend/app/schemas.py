@@ -8,11 +8,12 @@ class TelemetryCreate(BaseModel):
     session_id: UUID
     lat: Optional[float] = None
     lng: Optional[float] = None
-    depth: float
-    temp: float
-    ph: float
-    do_level: float
-    turbidity: float
+    depth: Optional[float] = None
+    temperature: Optional[float] = None
+    ph: Optional[float] = None
+    dissolved_oxygen: Optional[float] = None
+    ec_tds: Optional[float] = None
+    turbidity: Optional[float] = None
 
 class TelemetryResponse(TelemetryCreate):
     id: int

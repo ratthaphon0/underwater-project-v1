@@ -23,14 +23,17 @@ class MonitoringSessionResponse(MonitoringSessionBase):
 class WaterTelemetryBase(BaseModel):
     session_id: UUID
     timestamp: datetime
+
     lat: Optional[float] = None
     lng: Optional[float] = None
     depth: Optional[float] = None
+
     temperature: Optional[float] = None
     ph: Optional[float] = None
     dissolved_oxygen: Optional[float] = None
     ec_tds: Optional[float] = None
     turbidity: Optional[float] = None
+ turbidity: Optional[float] = None
 
 class WaterTelemetryCreate(WaterTelemetryBase):
     pass
