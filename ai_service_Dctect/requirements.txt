@@ -1,0 +1,6 @@
+flask
+requests
+ultralytics
+opencv-python
+numpy
+lapx>=0.5.5
