@@ -52,6 +52,11 @@ class FishDetection(Base):
     enhanced_image_path = Column(String, nullable=True)
     fish_count = Column(Integer)
     
+    # New fields for Tracking & Classification
+    track_id = Column(String, nullable=True, index=True) # Unique ID from AI Tracker
+    confidence = Column(Float, nullable=True)
+    fish_type = Column(String, default="unknown")
+
     # เก็บ Bounding Box (x, y, w, h, conf) เป็น JSON
     detection_metadata = Column(JSONB)  
     health_status = Column(String, default="unknown")
