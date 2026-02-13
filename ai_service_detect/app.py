@@ -303,10 +303,14 @@ def landing_page():
                     else loadingText.textContent = 'กำลังวิเคราะห์...';
 
                     const res = await fetch(endpoint, {{ method: 'POST', body: formData }});
+                    const contentType = res.headers.get('content-type') || '';
 
-                    if (!res.ok) {{
+                    if (!contentType.includes('application/json')) {{
+                        resultInfo.innerHTML = '<strong style=\"color:#ef4444;\">❌ Timeout:</strong> วิดีโอใหญ่เกินไปสำหรับ Tunnel — ลองใช้ <a href=\"http://localhost:8001\" style=\"color:#60a5fa;\">localhost:8001</a> แทน หรือใช้ไฟล์เล็กลง';
+                        result.style.display = 'block';
+                    }} else if (!res.ok) {{
                         const data = await res.json();
-                        resultInfo.innerHTML = '<strong style="color:#ef4444;">❌ Error:</strong> ' + (data.detail || 'Unknown error');
+                        resultInfo.innerHTML = '<strong style=\"color:#ef4444;\">❌ Error:</strong> ' + (data.detail || 'Unknown error');
                         result.style.display = 'block';
                     }} else if (isVideo) {{
                         const data = await res.json();
@@ -330,7 +334,7 @@ def landing_page():
                         result.style.display = 'block';
                     }}
                 }} catch (err) {{
-                    resultInfo.innerHTML = '<strong style="color:#ef4444;">❌ Error:</strong> ' + err.message;
+                    resultInfo.innerHTML = '<strong style=\"color:#ef4444;\">❌ Error:</strong> ' + err.message;
                     result.style.display = 'block';
                 }}
 
