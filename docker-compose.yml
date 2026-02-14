@@ -61,6 +61,15 @@ services:
     ports:
       - 8080:8080
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    network_mode: host
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    profiles: [tunnel]
+
 volumes:
   db_data:
   minio_data:

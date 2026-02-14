@@ -18,5 +18,8 @@ Thumbs.db
 db_data/
 minio_data/
 
+# --- AI Detection Output ---
+ai_service_detect/runs/
+
 # --- Editor Config ---
 .vscode/
