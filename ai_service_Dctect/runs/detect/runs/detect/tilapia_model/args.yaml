@@ -1,7 +1,7 @@
 task: detect
 mode: train
 model: yolov8n.pt
-data: E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\datasets\data.yaml
+data: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\data.yaml
 epochs: 50
 time: null
 patience: 10
@@ -106,4 +106,4 @@ auto_augment: randaugment
 erasing: 0.4
 cfg: null
 tracker: botsort.yaml
-save_dir: E:\Project เรือดำน้ำ\code\underwater-project-v1\ai_service_Dctect\runs\detect\runs\detect\tilapia_model
+save_dir: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\runs\detect\runs\detect\tilapia_model

@@ -1,19 +1,7 @@
-# ระบุที่อยู่หลักของ Dataset (แก้ให้ตรงกับที่อยู่จริงในเครื่องคุณ)
-path: E:/Project เรือดำน้ำ/code/underwater-project-v1/ai_service_Detect/datasets
-
-# ระบุโฟลเดอร์ย่อย (ตัด ../ ออก)
-train: train/images
-val: valid/images
-test: test/images
-
-# จำนวนคลาสและชื่อ
+names:
+  0: Tilapia
 nc: 1
-names: ['Tilapia']
-
-# ส่วนของ roboflow ปล่อยไว้เหมือนเดิมได้ครับ
-roboflow:
-  workspace: beefish
-  project: tilapia-zlnu8
-  version: 1
-  license: CC BY 4.0
-  url: https://universe.roboflow.com/beefish/tilapia-zlnu8/dataset/1
+path: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets
+test: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\test\images
+train: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\train\images
+val: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\valid\images
