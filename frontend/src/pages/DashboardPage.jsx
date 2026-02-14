@@ -1,123 +1,116 @@
 import React from 'react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
-} from 'recharts';
-import { Activity, Droplets, Thermometer, Waves, Camera, AlertTriangle } from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { Thermometer, Droplets, Waves, Wind, Activity, PieChart, Ship } from 'lucide-react';
+
+// --- Imports Components ---
+import Sidebar from '../layout/Sidebar';       // Desktop Sidebar
+import Navbar from '../layout/Navbar';         // Mobile Bottom Nav (อันเดิมที่คุณมี)
+import MetricCard from '../components/MetricCard'; // Card Component
 
 const DashboardPage = ({ telemetry }) => {
-  // ดึงข้อมูลจาก props telemetry ที่ส่งมาจาก App.jsx
-  // สมมติว่าโครงสร้างคือ { data: [...], latest: {...}, status: 'connected' }
-  const data = telemetry?.data || [];
+  const data = telemetry?.data || [
+    { name: '1', value: 40 }, { name: '2', value: 30 },
+    { name: '3', value: 20 }, { name: '4', value: 27 },
+    { name: '5', value: 18 }, { name: '6', value: 23 },
+    { name: '7', value: 34 },
+  ];
   const latest = telemetry?.latest || {};
 
   return (
-    <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+    <div className="min-h-screen bg-[#eef1f5] flex font-sans overflow-hidden">
       
-      {/* 1. Status & Overview */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <Activity className="text-blue-500" /> Dashboard
-        </h2>
-        <div className="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
-          Session ID: {latest.session_id ? latest.session_id.slice(0,8) : 'No Active Session'}
-        </div>
-      </div>
+      {/* 1. เรียกใช้ Sidebar (จะแสดงเฉพาะจอ Desktop เพราะเราใส่ hidden md:flex ไว้ในไฟล์ Sidebar แล้ว) */}
+      <Sidebar />
 
-      {/* 2. Real-time Cards (Mapping from water_telemetry) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Temp (Celsius)" 
-          value={`${latest.temperature ?? '--'}°C`} 
-          icon={<Thermometer className="text-orange-500" />} 
-          color="bg-orange-50 dark:bg-orange-900/20" 
-        />
-        <StatCard 
-          title="pH Level" 
-          value={latest.ph ?? '--'} 
-          icon={<Droplets className="text-blue-500" />} 
-          color="bg-blue-50 dark:bg-blue-900/20" 
-        />
-        <StatCard 
-          title="Dissolved Oxygen" 
-          value={`${latest.dissolved_oxygen ?? '--'} mg/L`} 
-          icon={<Waves className="text-cyan-500" />} 
-          color="bg-cyan-50 dark:bg-cyan-900/20" 
-        />
-        <StatCard 
-          title="Turbidity" 
-          value={`${latest.turbidity ?? '--'} NTU`} 
-          icon={<Camera className="text-purple-500" />} 
-          color="bg-purple-50 dark:bg-purple-900/20" 
-        />
-      </div>
+      {/* 2. Main Content */}
+      <div className="flex-1 flex flex-col h-screen relative overflow-hidden">
+        
+        {/* Mobile Header */}
+        <header className="md:hidden pt-8 pb-4 px-6 bg-white z-10 shadow-sm">
+             {/* ... Code Header Mobile เดิม ... */}
+             <div className="flex flex-col items-center justify-center mt-2">
+                <div className="flex items-center gap-2">
+                   <PieChart className="w-5 h-5 text-gray-800" />
+                   <h1 className="text-lg font-black tracking-wider text-gray-800 uppercase">Dash Board</h1>
+                </div>
+             </div>
+        </header>
 
-      {/* 3. Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-          <h3 className="font-bold mb-6">Water Quality Trends</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="colorPh" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="timestamp" hide />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip />
-                <Area type="monotone" dataKey="ph" stroke="#3b82f6" fillOpacity={1} fill="url(#colorPh)" name="pH Level" />
-                <Line type="monotone" dataKey="temperature" stroke="#f59e0b" dot={false} name="Temp" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Desktop Header */}
+        <header className="hidden md:flex justify-between items-center px-8 py-5 bg-white shadow-sm z-10">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Activity className="text-[#4fbcdb]" /> Real-time Telemetry
+            </h2>
+             {/* User Profile etc. */}
+        </header>
 
-        {/* 4. AI Vision Integration (fish_detections) */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-          <h3 className="font-bold mb-4">AI Detection Results</h3>
-          <div className="space-y-4">
-            <div className="aspect-video bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 relative overflow-hidden">
-               {/* ใส่รูปภาพจาก raw_image_path หรือ enhanced_image_path */}
-               <span className="text-slate-400 text-sm">Live Camera Feed</span>
+        {/* Scrollable Body */}
+        <main className="flex-1 overflow-y-auto p-5 md:p-8 pb-24 md:pb-8 hide-scrollbar">
+          <div className="max-w-7xl mx-auto space-y-6">
+
+            {/* Graph Section */}
+            <div className="flex flex-col lg:flex-row gap-4 lg:h-80">
+                <div className="flex-1 bg-[#6c7285] rounded-3xl p-6 relative shadow-lg flex items-center justify-center overflow-hidden h-48 lg:h-auto">
+                    <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={data}>
+                        <defs>
+                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
+                        </linearGradient>
+                        </defs>
+                        <Area type="monotone" dataKey="value" stroke="#ffffff" strokeWidth={3} fill="url(#colorValue)" />
+                    </AreaChart>
+                    </ResponsiveContainer>
+                    <div className="absolute top-6 right-6 text-white/50">
+                        <Activity size={24} />
+                    </div>
+                </div>
+                {/* Side Control for Desktop */}
+                <div className="hidden lg:flex w-24 bg-white rounded-3xl flex-col items-center justify-between py-6 shadow-sm">
+                     <div className="space-y-4 flex flex-col items-center">
+                        <div className="p-3 bg-gray-100 rounded-full text-gray-500"><Wind size={20}/></div>
+                        <div className="p-3 bg-gray-100 rounded-full text-gray-500"><Waves size={20}/></div>
+                     </div>
+                     <div className="bg-[#101e42] p-4 rounded-full shadow-lg cursor-pointer hover:scale-110 transition-transform">
+                        <Ship className="w-6 h-6 text-white" />
+                     </div>
+                </div>
             </div>
-            <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
-              <span className="text-sm font-medium">Fish Count</span>
-              <span className="text-2xl font-black text-blue-600">12</span>
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard 
+                    label="TEMP (CELSIUS)" 
+                    value={latest.temperature ? `${latest.temperature}°C` : '-- °C'}
+                    icon={<Thermometer className="w-6 h-6 text-gray-600" />}
+                />
+                <MetricCard 
+                    label="pH LEVEL" 
+                    value={latest.ph ?? '--'}
+                    icon={<Droplets className="w-6 h-6 text-gray-600" />}
+                />
+                <MetricCard 
+                    label="DISSOLVED OXYGEN" 
+                    value={latest.dissolved_oxygen ? `${latest.dissolved_oxygen} mg/L` : '-- mg/L'}
+                    icon={<Wind className="w-6 h-6 text-gray-600" />}
+                />
+                <MetricCard 
+                    label="TURBIDITY" 
+                    value={latest.turbidity ? `${latest.turbidity} NTU` : '-- NTU'}
+                    icon={<Waves className="w-6 h-6 text-gray-600" />}
+                />
             </div>
           </div>
-        </div>
-      </div>
+        </main>
 
-      {/* 5. Alerts based on tilapia_lifecycle_standards */}
-      <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-4 rounded-xl flex gap-3">
-        <AlertTriangle className="text-red-500 shrink-0" />
-        <div>
-          <h4 className="text-red-800 dark:text-red-400 font-bold text-sm">Standard Alert</h4>
-          <p className="text-red-700 dark:text-red-300 text-xs">
-            Current pH level (6.2) is approaching the minimum threshold (6.0) for Adult Tilapia.
-          </p>
-        </div>
-      </div>
+        {/* 3. เรียกใช้ Navbar (Mobile Bottom Nav) */}
+        {/* ในไฟล์ Navbar.jsx อย่าลืมใส่ className="md:hidden ..." ไว้นะครับ จะได้ซ่อนตอนจอใหญ่ */}
+        <Navbar />
 
-    </main>
-  );
-};
-
-const StatCard = ({ title, value, icon, color }) => (
-  <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{title}</p>
-        <h3 className="text-2xl font-bold mt-1">{value}</h3>
-      </div>
-      <div className={`p-2 rounded-xl ${color}`}>
-        {icon}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default DashboardPage;
