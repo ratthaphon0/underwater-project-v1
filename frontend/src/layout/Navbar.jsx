@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import { Home, ChartPie, Settings, ChartLine } from 'lucide-react'
+import { Home, ChartPie, Settings, ChartLine, MapPinned } from 'lucide-react'
 
 const navItems = [
     { name: 'Home', icon: Home, href: '/' },
     { name: 'Dashboard', icon: ChartPie, href: '/dashboard' },
     { name: 'History', icon: ChartLine, href: '/history' },
+    { name: 'Map', icon: MapPinned, href: '/map' },
     { name: 'Setting', icon: Settings, href: '/setting' },
+
 ]
 
 // Reusable Button Component
@@ -58,7 +60,7 @@ function NavButton({ item, activeTab, setActiveTab, variant = 'mobile' }) {
                 </div>
             </div>
             {isActive && (
-                <span className="absolute bottom-4 text-[15px] font-bold text-white uppercase tracking-wider">
+                <span className="absolute bottom-4 text-[12px] font-bold text-white uppercase tracking-wider">
                     {name}
                 </span>)}
 
@@ -105,7 +107,7 @@ export default function Navbar() {
                     <img
                         src="/LogoSub_marien.png"
                         alt="Logo"
-                        className="w-12 h-12"
+                        className="w-13 h-11"
                     />
                     <div className="text-white font-bold text-xl">
                         CHONLAMART
