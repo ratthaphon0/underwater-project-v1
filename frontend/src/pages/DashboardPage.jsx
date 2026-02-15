@@ -50,7 +50,7 @@ const DashboardPage = ({ telemetry }) => {
 
                         {/* Graph Section */}
                         <div className="flex flex-col lg:flex-row gap-4 lg:h-80">
-                            <div className="flex-1 bg-[#6c7285] rounded-3xl p-6 relative shadow-lg flex items-center justify-center overflow-hidden h-48 lg:h-auto">
+                            <div className="flex-1 bg-[#6c7285] rounded-3xl p-6 relative shadow-lg overflow-hidden h-48 lg:h-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={data}>
                                         <defs>

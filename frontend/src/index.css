@@ -55,5 +55,9 @@ html,
 
 /* Button Utility Class */
 .btn-control {
-  @apply w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 hover:bg-primary/20 flex items-center justify-center transition-all border border-slate-200 dark:border-slate-700 active:scale-95;
+  @apply w-10 h-10 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center transition-all border border-slate-200 dark:border-slate-700 active:scale-95;
+}
+
+.btn-control:hover {
+  @apply bg-primary/20;
 }

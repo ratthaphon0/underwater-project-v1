@@ -9,6 +9,7 @@ export default function HeadMobile() {
             <img
                 src="/LogoSub_marien.png"
                 className="w-13 h-11 brightness-0 contrast-200"
+                style={{ width: '52px', height: '44px' }} // Fallback if Tailwind fails
             />
 
             {/* เส้นขวา */}
