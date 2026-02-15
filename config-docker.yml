@@ -1,0 +1,28 @@
+tunnel: submarine-tunnel
+ingress:
+  # Frontend - หน้าเว็บหลัก
+  - hostname: submarines.app
+    service: http://localhost:5173
+
+  # Backend API - รับข้อมูลจาก sensor
+  - hostname: api.submarines.app
+    service: http://localhost:8000
+
+  # Adminer - ดู/จัดการ database
+  - hostname: db.submarines.app
+    service: http://localhost:8080
+
+  # MinIO Console - จัดการ object storage
+  - hostname: storage.submarines.app
+    service: http://localhost:9001
+
+  # AI Service - ตรวจจับปลา (timeout ยาวสำหรับประมวลผลวิดีโอ)
+  - hostname: ai.submarines.app
+    service: http://localhost:8001
+    originRequest:
+      connectTimeout: 30s
+      noTLSVerify: false
+      httpHostHeader: ai.submarines.app
+
+  # Catch-all (required)
+  - service: http_status:404

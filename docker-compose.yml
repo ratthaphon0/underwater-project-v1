@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   frontend:
@@ -9,9 +9,8 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
-    depends_on:
-      - backend
+      - VITE_API_URL=${TUNNEL_API_URL:-http://localhost:8000}
+    depends_on: [backend]
 
   backend:
     build: ./backend
@@ -22,12 +21,21 @@ services:
     environment:
       # เชื่อมต่อภายใน Docker network ใช้ชื่อ service 'db' และพอร์ตภายใน '5432'
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
-      - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
-      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - NVIDIA_VISIBLE_DEVICES=all
+    depends_on: [db, minio]
+
+  ai_service:
+    build:
+      context: ./ai_service_detect
+    volumes:
+      - ./ai_service_detect:/code
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
     depends_on:
       - db
-      - minio
+
 
   db:
     image: postgres:16-alpine
@@ -36,8 +44,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "5433:5432" # Forward พอร์ตภายนอก 5433 เข้าไปที่ 5432 ใน Container
+    ports: ["5433:5432"]
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
@@ -45,21 +52,25 @@ services:
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
-    restart: always
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    ports:
-      - "9000:9000" # API Port
-      - "9001:9001" # Console Port
-    volumes:
-      - minio_data:/data
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["minio_data:/data"]
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - "8080:8080"
+      - 8080:8080
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    network_mode: host
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    volumes:
+      - ./config-docker.yml:/etc/cloudflared/config.yml:ro
+    profiles: [tunnel]
 
 volumes:
   db_data:
