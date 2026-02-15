@@ -19,4 +19,7 @@ db_data/
 minio_data/
 
 # --- Editor Config ---
-.vscode/ai_service_Dctect/
+.vscode/
+
+# --- Misspelled Folder to Ignore ---
+ai_service_Dctect/
