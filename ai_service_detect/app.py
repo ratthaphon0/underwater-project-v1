@@ -5,7 +5,6 @@ from ultralytics import YOLO
 import cv2
 import numpy as np
 import os
-import io
 import tempfile
 import shutil
 import subprocess
@@ -469,6 +468,7 @@ async def detect_video(
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+
         # เตรียมไฟล์ output
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"video_{timestamp}.mp4"
@@ -514,7 +514,7 @@ async def detect_video(
         processing_time = f"{minutes}m {seconds}s" if minutes > 0 else f"{seconds}s"
 
         return {
-            "total_frames": frame_count,
+            "total_frames": total_frames,
             "frames_with_fish": frames_with_fish,
             "processing_time": processing_time,
             "result_video": f"/results/{final_filename}"
