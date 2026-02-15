@@ -1,4 +1,4 @@
-export default function Head() {
+export default function HeadMobile() {
     return (
         <div className="md:hidden flex items-center gap-4 w-full">
 

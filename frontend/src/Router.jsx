@@ -1,13 +1,30 @@
-import { Routes, Route } from 'react-router-dom'
-import DashboardPage from './pages/DashboardPage'
-import HomePage from './pages/Home'
+import Navbar from "./layout/Navbar"
+import { Routes, Route } from "react-router-dom"
+import HomePage from "./pages/Home"
+import DashboardPage from "./pages/DashboardPage"
 
-export default function AppRouter() {
+function Router() {
     return (
-        <Routes>
-            {/* Main Routes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-        </Routes>
+        <div className="min-h-screen bg-[#0f172a]">
+
+            {/* Sidebar */}
+            <Navbar />
+
+            {/* Content wrapper */}
+            <div className="md:ml-64">
+
+                {/* Main content */}
+                <main className="min-h-screen p-6">
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                    </Routes>
+                </main>
+
+            </div>
+
+        </div>
     )
 }
+
+export default Router
