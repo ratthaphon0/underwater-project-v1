@@ -1,7 +1,8 @@
 from ultralytics import YOLO
 import os
 import glob
-import cv2
+
+
 
 # --- 1. ตั้งค่า Path อัตโนมัติ (เพื่อนโหลดไป รันได้เลย ไม่ต้องแก้ Path) ---
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -49,7 +50,8 @@ def main():
     # 4. สั่ง AI ตรวจจับ!
     # save=True จะบันทึกผลลัพธ์ลงโฟลเดอร์ runs/predict/exp...
     # conf=0.5 คือต้องมั่นใจเกิน 50% ถึงจะตีกรอบ
-    results = model.predict(source=test_image, save=True, conf=0.5, project='runs', name='predict', exist_ok=True)
+    model.predict(source=test_image, save=True, conf=0.5, project='runs', name='predict', exist_ok=True)
+
 
     print("\n" + "="*50)
     print(f"✅ เรียบร้อย! ผลลัพธ์ถูกบันทึกไว้ที่: {os.path.join(OUTPUT_DIR)}")

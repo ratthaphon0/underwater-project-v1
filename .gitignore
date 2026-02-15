@@ -23,3 +23,6 @@ ai_service_detect/runs/
 
 # --- Editor Config ---
 .vscode/
+
+# --- Misspelled Folder to Ignore ---
+ai_service_Dctect/

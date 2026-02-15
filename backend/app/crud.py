@@ -1,7 +1,7 @@
 #ฟังก์ชันสำหรับบันทึกและดึงข้อมูล (Logic ของ Database)
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from . import models, schemas
+from app import models, schemas
 import uuid
 
 # 1. สร้าง Session ใหม่
