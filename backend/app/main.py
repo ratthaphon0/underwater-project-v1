@@ -6,9 +6,9 @@ from sqlalchemy import desc
 import os
 
 # Import โมดูลภายในที่เราสร้างไว้
-from . import database, models, schemas, crud
+from app import database, models, schemas, crud
 # Import routes.py ที่คุณทำไว้
-from . import routes 
+from app import routes 
 
 # ==========================================
 # 1. การตั้งค่า App และความปลอดภัย (CORS)
