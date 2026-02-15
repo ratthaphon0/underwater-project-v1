@@ -2,7 +2,8 @@ from ultralytics import YOLO
 import os
 import shutil
 import yaml
-
+import glob
+import pathlib
 
 # --- 1. ตั้งค่า Path ---
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,7 +16,7 @@ DEST_MODEL_PATH = os.path.join(DEST_MODEL_DIR, 'best.pt')
 
 def force_fix_yaml():
     """ฟังก์ชันแก้ data.yaml (เหมือนเดิม เพราะทำงานดีแล้ว)"""
-    print("🔧 กำลังตรวจสอบไฟล์ data.yaml...")
+    print(f"🔧 กำลังตรวจสอบไฟล์ data.yaml...")
     if not os.path.exists(DATA_YAML_PATH):
         print(f"❌ หาไฟล์ไม่เจอ: {DATA_YAML_PATH}")
         return False
@@ -50,7 +51,7 @@ def force_fix_yaml():
     with open(DATA_YAML_PATH, 'w', encoding='utf-8') as f:
         yaml.dump(new_data, f, default_flow_style=False, allow_unicode=True)
 
-    print("✅ Config พร้อมใช้งาน!")
+    print(f"✅ Config พร้อมใช้งาน!")
     return True
 
 def find_latest_best_model():
@@ -90,7 +91,7 @@ def main():
     # หมายเหตุ: การใช้ project='runs/detect' บางครั้งทำให้เกิดโฟลเดอร์ซ้อน
     # แต่ฟังก์ชัน copy ใหม่ของเราจะจัดการปัญหานี้ได้ครับ
     try:
-        model.train(
+        results = model.train(
             data=DATA_YAML_PATH,
             epochs=50,
             imgsz=640,

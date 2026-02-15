@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   frontend:
@@ -8,7 +8,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=${TUNNEL_API_URL:-http://localhost:8000}
     depends_on: [backend]
 
   backend:
@@ -23,9 +23,13 @@ services:
 
   ai_service:
     build:
-      context: ./ai_service_Dctect
+      context: ./ai_service_detect
     volumes:
-      - ./ai_service_Dctect:/code
+      - ./ai_service_detect:/code
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
     depends_on:
       - db
 
