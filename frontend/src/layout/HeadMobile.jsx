@@ -1,0 +1,20 @@
+export default function HeadMobile() {
+    return (
+        <div className="md:hidden flex items-center gap-4 w-full">
+
+            {/* เส้นซ้าย */}
+            <div className="flex-1 h-[2px] bg-black rounded-full"></div>
+
+            {/* icon container */}
+            <img
+                src="/LogoSub_marien.png"
+                className="w-13 h-11 brightness-0 contrast-200"
+                style={{ width: '52px', height: '44px' }} // Fallback if Tailwind fails
+            />
+
+            {/* เส้นขวา */}
+            <div className="flex-1 h-[2px] bg-black rounded-full"></div>
+
+        </div>
+    )
+}
