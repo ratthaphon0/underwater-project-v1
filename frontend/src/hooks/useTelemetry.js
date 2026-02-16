@@ -10,9 +10,9 @@ const useTelemetry = () => {
     { timestamp: '12:20', ph: 7.0, temperature: 28.8, dissolved_oxygen: 5.1, turbidity: 13, session_id: 'SESS-001' },
   ];
 
-  const [data, setData] = useState(mockData);
-  const [latest, setLatest] = useState(mockData[mockData.length - 1]);
-  const [status, setStatus] = useState('online (mock)');
+  const [data, _setData] = useState(mockData);
+  const [latest, _setLatest] = useState(mockData[mockData.length - 1]);
+  const [status, _setStatus] = useState('online (mock)');
 
   // จำลองว่ามีการอัปเดตข้อมูลทุกๆ 5 วินาที
   useEffect(() => {

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Droplets } from 'lucide-react';
 
 const EnvironmentBar = () => {
-    const [ph, setPh] = useState(7.5);
-    const [temp, setTemp] = useState(25.7);
-    const [quality, setQuality] = useState('GOOD');
+    const [ph, _setPh] = useState(7.5);
+    const [temp, _setTemp] = useState(25.7);
+    const [quality, _setQuality] = useState('GOOD');
     return (
         <div className="md:hidden flex justify-center w-full mt-4">
             <div className="flex items-center justify-center gap-2 px-4 py-3 bg-[#2D3E61]/20 rounded-full inline-flex">

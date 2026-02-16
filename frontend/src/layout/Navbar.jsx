@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { _useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Home, ChartPie, Settings, ChartLine, MapPinned } from 'lucide-react'
 
