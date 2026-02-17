@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 import torch
 
 # import ให้ตรงกับโครงสร้างใหม่
-from .database import get_db
-from . import models, schemas 
+from app.database import get_db
+from app import models, schemas 
 
 router = APIRouter()
 
