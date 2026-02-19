@@ -1,0 +1,86 @@
+# คำสั่งที่ต้องรันบน cluster (aip18@br1)
+
+# 1. สร้างโฟลเดอร์สำหรับเทรน
+mkdir -p ~/yolo_training
+cd ~/yolo_training
+
+# 2. ดาวน์โหลด train_bundle.zip จากเครื่อง local
+# (รันบนเครื่อง local ของคุณ)
+# scp /home/asxif/proj/underwater-project-v1/train_bundle.zip aip18@br1:~/yolo_training/
+
+# 3. สร้าง SLURM script บน cluster
+cat > slurm_train.sh << 'EOF'
+#!/bin/bash
+#SBATCH -p fullq
+#SBATCH --gres=gpu:1
+#SBATCH --time=01:00:00
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=500G
+#SBATCH --job-name=yolo_max
+#SBATCH --output=log_max_%j.out
+#SBATCH --error=log_max_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=ratthaphon.kha@ku.th
+
+# ==========================================
+# 🔧 ตั้งค่า Path ของคุณให้ตรงจุดนี้ (แก้แค่บรรทัดนี้)
+# ==========================================
+USER_DATASET_PATH="/home/aip15/datasets/new_raw_data"
+# ==========================================
+
+# ตั้งค่าตัวแปรอัตโนมัติ
+SCRATCH_ROOT="/scratch/$SLURM_JOB_ID"
+FOLDER_NAME=$(basename "$USER_DATASET_PATH")
+SCRATCH_DATASET="$SCRATCH_ROOT/$FOLDER_NAME"
+NEW_DATA_YAML="$SCRATCH_DATASET/data.yaml"
+
+echo "🔥 Allocated Resources:"
+echo "   Node: $SLURMD_NODENAME | CPU: $SLURM_CPUS_PER_TASK | RAM: 500G"
+
+START_TIME=$(date +%s)
+
+# 1. ย้ายไฟล์ไป SSD (/scratch)
+echo "🚀 Copying dataset ($FOLDER_NAME) to /scratch..."
+mkdir -p $SCRATCH_ROOT
+cp -r "$USER_DATASET_PATH" "$SCRATCH_ROOT/"
+
+# เช็คว่าไฟล์ไปจริงไหม
+if [ ! -f "$NEW_DATA_YAML" ]; then
+    echo "❌ Error: data.yaml not found at $NEW_DATA_YAML"
+    echo "   Check if USER_DATASET_PATH is correct."
+    exit 1
+fi
+
+COPY_TIME=$(date +%s)
+echo "✅ Copy finished in $((COPY_TIME - START_TIME)) seconds."
+
+# 2. รัน Python
+module load miniconda3
+source activate yolov8
+
+echo "⚡ Starting YOLOv8 Training..."
+python train_nontri.py "$NEW_DATA_YAML"
+
+END_TIME=$(date +%s)
+echo "🏁 Total Job Time: $((END_TIME - START_TIME)) seconds."
+
+# Cleanup
+rm -rf $SCRATCH_ROOT
+EOF
+
+chmod +x slurm_train.sh
+
+# 4. แตกไฟล์ zip
+unzip train_bundle.zip
+
+# 5. แก้ไข USER_DATASET_PATH ใน slurm_train.sh ให้ถูกต้อง
+nano slurm_train.sh
+
+# 6. ส่ง job
+sbatch slurm_train.sh
+
+# 7. ตรวจสอบสถานะ
+squeue -u aip18
+
+# 8. ดู log
+tail -f log_max_*.out
