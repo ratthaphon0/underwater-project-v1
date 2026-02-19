@@ -39,3 +39,23 @@ class DashboardResponse(BaseModel):
     total_fish_count: int
     latest_image: Optional[str]
     system_status: str
+
+# --- Schemas สำหรับ Fish Detection (AI) ---
+class FishDetectionCreate(BaseModel):
+    session_id: UUID
+    fish_count: int
+    track_id: Optional[str] = None
+    confidence: Optional[float] = None
+    fish_type: Optional[str] = "unknown"
+    detection_metadata: Optional[List[dict]] = None
+    image_base64: Optional[str] = None # กรณีส่งรูปมาเป็น Base64 (ถ้ามี)
+
+class FishDetectionResponse(BaseModel):
+    id: int
+    session_id: UUID
+    track_id: Optional[str]
+    fish_type: str
+    timestamp: datetime
+    
+    class Config:
+        from_attributes = True

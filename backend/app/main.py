@@ -1,7 +1,13 @@
+<<<<<<< HEAD
 from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+=======
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+>>>>>>> 38334d492e55b2897b0ae49475264638e64930f1
 import os
 import contextlib
 
@@ -10,6 +16,7 @@ from app.core.config import settings
 from app.core.security import setup_security
 from app.core.logging import setup_logging
 
+<<<<<<< HEAD
 # Import โมดูลภายในที่เราสร้างไว้
 from app import database, models, schemas, crud
 # Import routes.py ที่คุณทำไว้
@@ -20,6 +27,13 @@ setup_logging()
 
 # ==========================================
 # 1. การตั้งค่า App และความปลอดภัย
+=======
+from . import database
+from .routers import system, telemetry, ai, dashboard, session, prediction
+
+# ==========================================
+# 1. App Configuration & Security (CORS)
+>>>>>>> 38334d492e55b2897b0ae49475264638e64930f1
 # ==========================================
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +42,7 @@ async def lifespan(app: FastAPI):
     # Shutdown
 
 app = FastAPI(
+<<<<<<< HEAD
     title=settings.PROJECT_NAME,
     description="API สำหรับเรือดำน้ำอัตโนมัติ ตรวจจับปลานิลและวัดคุณภาพน้ำ",
     version=settings.VERSION,
@@ -36,19 +51,39 @@ app = FastAPI(
 
 # [NEW] Setup Security (Failed CORS & Trusted Host)
 app = setup_security(app)
+=======
+    title="Project Submarine AI Backend ⚓",
+    description="API for Autonomous Underwater Drone & AI Analysis",
+    version="2.0.0"
+)
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+>>>>>>> 38334d492e55b2897b0ae49475264638e64930f1
 
 # ==========================================
-# 2. การจัดการไฟล์รูปภาพ (Static Files)
+# 2. Static Files (Images)
 # ==========================================
+<<<<<<< HEAD
 # สร้างโฟลเดอร์เก็บรูป AI ถ้ายังไม่มี
 os.makedirs(settings.IMAGE_STORAGE_PATH, exist_ok=True)
 
 # Mount โฟลเดอร์เพื่อให้เข้าถึงรูปภาพผ่าน URL ได้
+=======
+os.makedirs("static/detections", exist_ok=True)
+>>>>>>> 38334d492e55b2897b0ae49475264638e64930f1
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ==========================================
-# 3. เชื่อมต่อ Router (routes.py)
+# 3. Router Registration
 # ==========================================
+<<<<<<< HEAD
 app.include_router(routes.router, prefix=settings.API_V1_STR, tags=["System & Telemetry"])
 
 # ==========================================
@@ -119,15 +154,32 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
 
 # ==========================================
 # 5. Root Endpoint
+=======
+# System & Health
+app.include_router(system.router, prefix="/api/v1")
+
+# Core Features
+app.include_router(session.router, prefix="/api/v1")    # /api/v1/sessions
+app.include_router(telemetry.router, prefix="/api/v1")  # /api/v1/telemetry
+app.include_router(ai.router, prefix="/api/v1")         # /api/v1/ai
+app.include_router(dashboard.router, prefix="/api/v1")  # /api/v1/dashboard
+app.include_router(prediction.router, prefix="/api/v1") # /api/v1/predict
+
+# ==========================================
+# 4. Root Endpoint
+>>>>>>> 38334d492e55b2897b0ae49475264638e64930f1
 # ==========================================
 @app.get("/")
 def read_root():
     return {
+<<<<<<< HEAD
         "project": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
+=======
+        "project": "Submarine AI",
+        "status": "Ready to dive! 🌊",
+        "version": "v2.0 (Refactored)",
+>>>>>>> 38334d492e55b2897b0ae49475264638e64930f1
         "docs_url": "/docs"
     }
-
-# ⚠️ หมายเหตุ: เราลบคำสั่ง create_all ออกแล้วตามที่คุณขอ
-# เพราะคุณมีตารางใน Database อยู่แล้ว
