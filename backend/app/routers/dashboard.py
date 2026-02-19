@@ -39,6 +39,18 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
         # Let's stick to unique track_id as requested.
         pass
 
+    # [Cloud Ready] Generate Full Image URL
+    image_url = None
+    if latest_detection and latest_detection.raw_image_path:
+        path = latest_detection.raw_image_path
+        if path.startswith("http"):
+             image_url = path
+        else:
+             from ..core.config import settings
+             # Ensure no double slashes if path starts with /
+             clean_path = path.lstrip("/")
+             image_url = f"{settings.STORAGE_PUBLIC_URL}/{clean_path}"
+
     return {
         "session_id": session_id,
         "system_status": "ONLINE",
@@ -50,9 +62,9 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
             "turbidity": telemetry.turbidity if telemetry else 0.0,
         },
         "ai_vision": {
-            "fish_count": unique_fish_count, # Use the unique count
+            "fish_count": unique_fish_count, 
             "latest_detection_type": latest_detection.fish_type if latest_detection else "unknown",
             "last_seen": latest_detection.timestamp if latest_detection else None,
-            "image_url": latest_detection.raw_image_path if latest_detection else None
+            "image_url": image_url
         }
     }
