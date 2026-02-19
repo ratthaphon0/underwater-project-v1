@@ -11,3 +11,4 @@ psycopg2-binary
 sqlalchemy
 python-dotenv
 minio
+pydantic-settings>=2.0.0
