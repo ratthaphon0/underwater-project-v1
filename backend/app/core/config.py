@@ -31,16 +31,23 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
+
     # --- Database ---
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
+    DATABASE_URL: Union[str, None] = None
+    
+    POSTGRES_SERVER: Union[str, None] = None
+    POSTGRES_USER: Union[str, None] = None
+    POSTGRES_PASSWORD: Union[str, None] = None
+    POSTGRES_DB: Union[str, None] = None
     POSTGRES_PORT: str = "5432"
     
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
+        if self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_PASSWORD and self.POSTGRES_DB:
+            return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        raise ValueError("Missing database configuration: Either DATABASE_URL or POSTGRES_... fields must be set")
 
     # --- AI & Storage ---
     MODEL_PATH: str = "models/best.pt"

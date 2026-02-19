@@ -1,21 +1,20 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 import os
 import contextlib
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-# [NEW] Import Core Modules
 from app.core.config import settings
 from app.core.security import setup_security
 from app.core.logging import setup_logging
 
-# [NEW] Import Modular Routers (New Structure from Dev Branch)
+# Import Routers
 from app.routers import system, telemetry, ai, dashboard, session, prediction
 
 # --- 0. Setup Logging ---
 setup_logging()
 
 # ==========================================
-# 1. การตั้งค่า App และความปลอดภัย
+# 1. Lifespan (Startup/Shutdown)
 # ==========================================
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,27 +22,30 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown
 
+# ==========================================
+# 2. App Initialization
+# ==========================================
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="API สำหรับเรือดำน้ำอัตโนมัติ ตรวจจับปลานิลและวัดคุณภาพน้ำ",
+    description="API for Autonomous Underwater Drone & AI Analysis (v2.0 Refactored)",
     version=settings.VERSION,
     lifespan=lifespan
 )
 
-# [NEW] Setup Security (CORS & Trusted Host)
+# ==========================================
+# 3. Security (CORS & Trusted Host)
+# ==========================================
 app = setup_security(app)
 
 # ==========================================
-# 2. การจัดการไฟล์รูปภาพ (Static Files)
+# 4. Static Files
 # ==========================================
 # สร้างโฟลเดอร์เก็บรูป AI ถ้ายังไม่มี
 os.makedirs(settings.IMAGE_STORAGE_PATH, exist_ok=True)
-
-# Mount โฟลเดอร์เพื่อให้เข้าถึงรูปภาพผ่าน URL ได้
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ==========================================
-# 3. Router Registration (Modular Logic)
+# 5. Router Registration
 # ==========================================
 # System & Health
 app.include_router(system.router, prefix=settings.API_V1_STR)
@@ -56,7 +58,7 @@ app.include_router(dashboard.router, prefix=settings.API_V1_STR)  # /api/v1/dash
 app.include_router(prediction.router, prefix=settings.API_V1_STR) # /api/v1/predict
 
 # ==========================================
-# 4. Root Endpoint
+# 6. Root Endpoint
 # ==========================================
 @app.get("/")
 def read_root():
@@ -64,5 +66,6 @@ def read_root():
         "project": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
+        "status": "Ready to dive! 🌊",
         "docs_url": "/docs"
     }

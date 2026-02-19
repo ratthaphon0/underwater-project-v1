@@ -6,7 +6,8 @@ ENV PYTHONUNBUFFERED=1
 
 # [NEW] สร้าง User ใหม่ชื่อ 'appuser' (UID 1000) เพื่อความปลอดภัย
 # การรัน Container ด้วย root ถือเป็นความเสี่ยงบน Cloud
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN groupadd -g 1000 appuser && \
+    useradd -u 1000 -g appuser -s /bin/sh -m appuser
 
 # ตั้ง Folder ทำงานเป็น /code
 WORKDIR /code
