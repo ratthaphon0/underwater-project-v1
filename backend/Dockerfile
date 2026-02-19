@@ -22,7 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements.txt และ Install
 # [NOTE] เรา Copy แค่ไฟล์นี้ก่อน เพื่อให้ Docker Cache layer นี้ไว้ได้ถ้า code เปลี่ยนแต่ lib ไม่เปลี่ยน
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy Code ทั้งหมดเข้าไป
 COPY . .

@@ -1,15 +1,9 @@
-<<<<<<< HEAD:ai_service_detect/requirements.txt
 ultralytics>=8.0.0
 opencv-python-headless>=4.8.0
 PyYAML>=6.0
 fastapi>=0.95.0
 uvicorn>=0.22.0
 python-multipart
-=======
-flask
 requests
-ultralytics
-opencv-python
 numpy
 lapx>=0.5.5
->>>>>>> 38334d492e55b2897b0ae49475264638e64930f1:ai_service_Dctect/requirements.txt
