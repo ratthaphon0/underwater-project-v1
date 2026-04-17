@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
-from .. import models, schemas
+from .. import models
 from ..database import get_db
 
 router = APIRouter(
@@ -29,7 +29,7 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
     # Count unique track_ids that are not null
     unique_fish_count = db.query(func.count(func.distinct(models.FishDetection.track_id)))\
         .filter(models.FishDetection.session_id == session_id)\
-        .filter(models.FishDetection.track_id != None)\
+        .filter(models.FishDetection.track_id.is_not(None))\
         .scalar()
         
     # If no track_ids are used, might fall back to sum of counts (optional, but sticking to track_id for now)

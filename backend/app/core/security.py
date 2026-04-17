@@ -3,7 +3,6 @@
 # import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware import Middleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 # เราจะใช้ config ที่เราเพิ่งสร้าง

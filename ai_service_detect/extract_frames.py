@@ -137,8 +137,8 @@ def main():
     print(f"\n{'='*50}")
     print(f"Finished! Total new images: {total_saved}")
     print(f"Output: {OUTPUT_DIR}")
-    print(f"\nNext step: label these images with LabelImg or Roboflow,")
-    print(f"then move to datasets/train/ and datasets/valid/")
+    print("\nNext step: label these images with LabelImg or Roboflow,")
+    print("then move to datasets/train/ and datasets/valid/")
     print(f"{'='*50}\n")
 
 

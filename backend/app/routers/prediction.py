@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from ..services.model_engine import model_engine
-from .. import schemas
 
 router = APIRouter(
     prefix="/predict",

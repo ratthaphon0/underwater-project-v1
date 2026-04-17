@@ -7,7 +7,6 @@
 import os
 import zipfile
 import shutil
-from pathlib import Path
 
 def create_train_bundle():
     """สร้าง train_bundle.zip สำหรับการเทรนบน cluster"""
@@ -122,7 +121,7 @@ def create_train_bundle():
     file_size = os.path.getsize(zip_filename) / (1024 * 1024)  # MB
     print(f"\n🎉 สร้าง {zip_filename} เสร็จสิ้น!")
     print(f"📦 ขนาดไฟล์: {file_size:.1f} MB")
-    print(f"📋 พร้อมอัปโหลดขึ้น Nontri AI cluster!")
+    print("📋 พร้อมอัปโหลดขึ้น Nontri AI cluster!")
 
 if __name__ == '__main__':
     create_train_bundle()

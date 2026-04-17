@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from ..core.config import settings
-import json
 import base64
 import os
 import uuid
