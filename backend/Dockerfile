@@ -1,23 +1,20 @@
-# ใช้ Base Image เดิมของคุณ (ดีแล้วสำหรับ AI/OpenCV)
-FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
+# python:3.11-slim รองรับทั้ง x86_64 และ ARM64 (Raspberry Pi 5)
+# เบากว่า pytorch/pytorch (~120MB vs ~5GB) เพราะ backend ไม่ได้รัน YOLO
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# [NEW] สร้าง User ใหม่ชื่อ 'appuser' (UID 1000) เพื่อความปลอดภัย
-# การรัน Container ด้วย root ถือเป็นความเสี่ยงบน Cloud
+# สร้าง User ใหม่ชื่อ 'appuser' (UID 1000) เพื่อความปลอดภัย
 RUN groupadd -g 1000 appuser && \
     useradd -u 1000 -g appuser -s /bin/sh -m appuser
 
 # ตั้ง Folder ทำงานเป็น /code
 WORKDIR /code
 
-# Install System Dependencies for OpenCV
-# [NOTE] เพิ่ม libgomp1 และ libexpat1 เผื่อไว้สำหรับบาง library ที่ต้องการ
+# psycopg2-binary ต้องการ libpq เท่านั้น
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    libgomp1 \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt และ Install
