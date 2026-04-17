@@ -16,6 +16,7 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -28,7 +29,7 @@ services:
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
     depends_on:
       - minio
-      # - db  
+      # - db
 
   ai_service:
     build:
@@ -57,15 +58,14 @@ services:
       - API_UPDATE_INTERVAL=${API_UPDATE_INTERVAL:-1.0}
     depends_on:
       - backend
-    #ถ้ามี NVIDIA GPU: เปิด block นี้โดยลบ # ออก
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-
+    #   #ถ้ามี NVIDIA GPU: เปิด block นี้โดยลบ # ออก
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
   # --- Local Database Services (Run only if needed) ---
   db:
     image: postgres:16-alpine
