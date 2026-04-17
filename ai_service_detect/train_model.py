@@ -1,133 +1,196 @@
+"""
+train_model.py — เทรนโมเดล YOLOv8 สำหรับตรวจจับปลานิล
+
+วิธีใช้:
+    python train_model.py
+
+ผลลัพธ์:
+    models/best.pt  ← โมเดลที่ดีที่สุด พร้อมใช้งานโดย app.py และ ai_tracker.py
+"""
+
 from ultralytics import YOLO
 import os
 import shutil
 import yaml
 
+# ─── Paths ────────────────────────────────────────────────────────────────────
 
-# --- 1. ตั้งค่า Path ---
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATASET_DIR = os.path.join(CURRENT_DIR, 'datasets')
-DATA_YAML_PATH = os.path.join(DATASET_DIR, 'data.yaml')
+CURRENT_DIR    = os.path.dirname(os.path.abspath(__file__))
+DATASET_DIR    = os.path.join(CURRENT_DIR, "datasets")
+DATA_YAML_PATH = os.path.join(DATASET_DIR, "data.yaml")
+DEST_MODEL_DIR = os.path.join(CURRENT_DIR, "models")
+DEST_MODEL_PATH = os.path.join(DEST_MODEL_DIR, "best.pt")
 
-# ปลายทางเก็บโมเดล (ที่ทีมจะเรียกใช้)
-DEST_MODEL_DIR = os.path.join(CURRENT_DIR, 'models')
-DEST_MODEL_PATH = os.path.join(DEST_MODEL_DIR, 'best.pt')
 
-def force_fix_yaml():
-    """ฟังก์ชันแก้ data.yaml (เหมือนเดิม เพราะทำงานดีแล้ว)"""
-    print("🔧 กำลังตรวจสอบไฟล์ data.yaml...")
-    if not os.path.exists(DATA_YAML_PATH):
-        print(f"❌ หาไฟล์ไม่เจอ: {DATA_YAML_PATH}")
+# ─── Fix data.yaml ────────────────────────────────────────────────────────────
+
+def force_fix_yaml() -> bool:
+    """
+    เขียน data.yaml ใหม่ด้วย absolute path ที่ถูกต้อง
+    แก้ปัญหา path สะกดผิด หรือ path เก่าที่ hardcode ไว้ผิด
+    """
+    print("Checking data.yaml...")
+
+    if not os.path.exists(DATASET_DIR):
+        print(f"[Error] Dataset dir not found: {DATASET_DIR}")
         return False
 
-    with open(DATA_YAML_PATH, 'r', encoding='utf-8') as f:
-        try:
-            old_data = yaml.safe_load(f)
-        except yaml.YAMLError:
-            old_data = {}
+    # รองรับทั้ง valid/ และ val/
+    val_dir = "valid" if os.path.exists(os.path.join(DATASET_DIR, "valid")) else "val"
 
-    if os.path.exists(os.path.join(DATASET_DIR, 'valid')):
-        val_dir_name = 'valid'
-    else:
-        val_dir_name = 'val'
-    
-    # บังคับเขียน Path เต็ม
+    # อ่าน names/nc จาก yaml เดิมถ้ามี
+    names = {0: "Tilapia"}
+    nc    = 1
+    if os.path.exists(DATA_YAML_PATH):
+        with open(DATA_YAML_PATH, "r", encoding="utf-8") as f:
+            try:
+                old = yaml.safe_load(f) or {}
+                if "names" in old:
+                    names = old["names"]
+                if "nc" in old:
+                    nc = old["nc"]
+            except yaml.YAMLError:
+                pass
+
     new_data = {
-        'path': DATASET_DIR,
-        'train': os.path.join(DATASET_DIR, 'train', 'images'),
-        'val': os.path.join(DATASET_DIR, val_dir_name, 'images'),
-        'test': os.path.join(DATASET_DIR, 'test', 'images'),
+        "path":  DATASET_DIR,
+        "train": os.path.join(DATASET_DIR, "train", "images"),
+        "val":   os.path.join(DATASET_DIR, val_dir, "images"),
+        "test":  os.path.join(DATASET_DIR, "test", "images"),
+        "nc":    nc,
+        "names": names,
     }
 
-    if 'names' in old_data:
-        new_data['names'] = old_data['names']
-    else:
-        new_data['names'] = {0: 'Tilapia'}
-    
-    if 'nc' in old_data:
-        new_data['nc'] = old_data['nc']
-
-    with open(DATA_YAML_PATH, 'w', encoding='utf-8') as f:
+    with open(DATA_YAML_PATH, "w", encoding="utf-8") as f:
         yaml.dump(new_data, f, default_flow_style=False, allow_unicode=True)
 
-    print("✅ Config พร้อมใช้งาน!")
+    print(f"  data.yaml updated: {DATA_YAML_PATH}")
+    print(f"  train : {new_data['train']}")
+    print(f"  val   : {new_data['val']}")
+    print(f"  classes: {names}")
     return True
 
-def find_latest_best_model():
-    """
-    ฟังก์ชันค้นหาไฟล์ best.pt ที่ 'ใหม่ที่สุด' ในโฟลเดอร์ runs ทั้งหมด
-    ไม่ว่าจะซ่อนอยู่ลึกแค่ไหนก็ตาม
-    """
-    search_dir = os.path.join(CURRENT_DIR, 'runs')
-    best_file = None
+
+# ─── Find Best Model ──────────────────────────────────────────────────────────
+
+def find_latest_best_model() -> str | None:
+    """ค้นหา best.pt ที่ใหม่ที่สุดในโฟลเดอร์ runs/"""
+    search_dir  = os.path.join(CURRENT_DIR, "runs")
+    best_file   = None
     latest_time = 0
 
-    # เดินหาไฟล์ best.pt ทุกซอกทุกมุม
-    print(f"🔍 กำลังสแกนหาไฟล์ best.pt ล่าสุดใน {search_dir} ...")
-    
-    for root, dirs, files in os.walk(search_dir):
-        for file in files:
-            if file == 'best.pt':
-                full_path = os.path.join(root, file)
-                # เช็คเวลาไฟล์
-                file_time = os.path.getmtime(full_path)
-                if file_time > latest_time:
-                    latest_time = file_time
-                    best_file = full_path
+    print(f"Scanning for best.pt in {search_dir} ...")
+    for root, _, files in os.walk(search_dir):
+        for f in files:
+            if f == "best.pt":
+                full  = os.path.join(root, f)
+                mtime = os.path.getmtime(full)
+                if mtime > latest_time:
+                    latest_time = mtime
+                    best_file   = full
 
     return best_file
 
+
+# ─── Count Dataset ────────────────────────────────────────────────────────────
+
+def count_dataset() -> dict:
+    splits = {}
+    for split in ("train", "valid", "val", "test"):
+        img_dir = os.path.join(DATASET_DIR, split, "images")
+        if os.path.exists(img_dir):
+            exts  = (".jpg", ".jpeg", ".png")
+            count = sum(1 for f in os.listdir(img_dir) if f.lower().endswith(exts))
+            splits[split] = count
+    return splits
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
+
 def main():
-    # 1. แก้ Config
+    # 1. ตรวจสอบ dataset
+    counts = count_dataset()
+    print("\nDataset summary:")
+    for split, n in counts.items():
+        print(f"  {split:8s}: {n} images")
+
+    train_count = counts.get("train", 0)
+    if train_count < 50:
+        print(f"\n[Warning] Only {train_count} training images.")
+        print("  Run extract_frames.py and label images first for better results.")
+
+    # 2. Fix data.yaml
     if not force_fix_yaml():
         return
 
-    print("🚀 กำลังเริ่มเทรนโมเดล...")
+    # 3. เลือก base model
+    #    YOLOv8s ดีกว่า YOLOv8n ~5-8% mAP บน dataset เล็ก
+    #    ดาวน์โหลดอัตโนมัติถ้ายังไม่มีไฟล์
+    BASE_MODEL = "yolov8s.pt"
+    print(f"\nBase model: {BASE_MODEL}")
+    print("Starting training...")
 
-    # 2. เริ่มเทรน
-    model = YOLO('yolov8n.pt') 
-    
-    # หมายเหตุ: การใช้ project='runs/detect' บางครั้งทำให้เกิดโฟลเดอร์ซ้อน
-    # แต่ฟังก์ชัน copy ใหม่ของเราจะจัดการปัญหานี้ได้ครับ
+    model = YOLO(BASE_MODEL)
+
     try:
         model.train(
             data=DATA_YAML_PATH,
-            epochs=50,
+
+            # ─── Training schedule ────────────────────────────────────
+            epochs=100,           # เพิ่มจาก 50 เป็น 100 (dataset เล็ก ต้องเทรนนานขึ้น)
+            patience=20,          # early stop ถ้า val loss ไม่ดีขึ้น 20 epochs
             imgsz=640,
-            batch=8,
-            device=0,
-            project='runs/detect',
-            name='tilapia_model',
-            patience=10,
-            workers=1,
-            exist_ok=True 
+            batch=16,             # เพิ่มจาก 8 เป็น 16 (ถ้า GPU RAM ไม่พอ จะ fallback อัตโนมัติ)
+
+            # ─── Hardware ────────────────────────────────────────────
+            device=0,             # GPU 0 — เปลี่ยนเป็น "cpu" ถ้าไม่มี GPU
+            workers=2,
+
+            # ─── Underwater augmentation ─────────────────────────────
+            # สีน้ำเปลี่ยนตามความลึก/แสง — สำคัญมากสำหรับ underwater footage
+            hsv_h=0.02,           # hue ±2%   (สีน้ำแตกต่างกัน)
+            hsv_s=0.7,            # saturation ±70%
+            hsv_v=0.5,            # brightness ±50% (แสงใต้น้ำแปรปรวน)
+            # ─── Geometric ───────────────────────────────────────────
+            fliplr=0.5,           # พลิกซ้าย-ขวา (ปลาว่ายสองทิศ)
+            flipud=0.1,           # พลิกแนวตั้งเบาๆ
+            degrees=5.0,          # หมุน ±5° (กล้องใต้น้ำเอียงได้)
+            translate=0.1,        # เลื่อนภาพ ±10%
+            scale=0.5,            # zoom in/out ±50%
+            # ─── Advanced ────────────────────────────────────────────
+            mosaic=1.0,           # รวม 4 ภาพ = เหมือนมี dataset 4 เท่า
+            mixup=0.1,            # blend 2 ภาพ เพิ่ม generalization
+            copy_paste=0.1,       # cut-paste ปลาจากภาพหนึ่งไปอีกภาพ
+
+            # ─── Output ──────────────────────────────────────────────
+            project="runs/detect",
+            name="tilapia_v2",
+            exist_ok=True,
+            save_period=10,       # checkpoint ทุก 10 epochs
         )
     except Exception as e:
-        print(f"⚠️ เกิดข้อผิดพลาดขณะเทรน (อาจเป็น Bug ของ YOLO ในการสร้างโฟลเดอร์): {e}")
-        # ถึงเทรน Error ตอนจบ แต่ถ้าได้ไฟล์ best.pt แล้ว เราก็จะพยายาม copy อยู่ดี
+        print(f"[Warning] Training error (may still have best.pt): {e}")
 
-    # 3. ระบบ Auto-Copy อัจฉริยะ (Smart Copy)
-    print("\n" + "="*50)
-    print("📦 ระบบจัดการไฟล์อัตโนมัติกำลังทำงาน...")
+    # 4. Copy best.pt ไปที่ models/
+    print("\n" + "=" * 50)
+    print("Copying best model...")
 
-    latest_model = find_latest_best_model()
-
-    if latest_model:
-        print(f"✅ เจอไฟล์ล่าสุดที่: {latest_model}")
-        
-        # สร้างโฟลเดอร์ปลายทางถ้ายังไม่มี
+    latest = find_latest_best_model()
+    if latest:
         os.makedirs(DEST_MODEL_DIR, exist_ok=True)
-        
-        # ก๊อปปี้และเขียนทับทันที
         try:
-            shutil.copy(latest_model, DEST_MODEL_PATH)
-            print(f"🎉 อัปเดตสำเร็จ! ทีมสามารถใช้ไฟล์นี้ได้เลย: {DEST_MODEL_PATH}")
+            shutil.copy(latest, DEST_MODEL_PATH)
+            size_mb = os.path.getsize(DEST_MODEL_PATH) / 1024 / 1024
+            print(f"  Source : {latest}")
+            print(f"  Dest   : {DEST_MODEL_PATH} ({size_mb:.1f} MB)")
+            print(f"\nModel ready: {DEST_MODEL_PATH}")
         except Exception as e:
-            print(f"❌ ก๊อปปี้ไม่สำเร็จ: {e}")
+            print(f"[Error] Copy failed: {e}")
     else:
-        print("❌ ไม่พบไฟล์ best.pt ในโฟลเดอร์ runs เลย")
-    
-    print("="*50 + "\n")
+        print("[Error] No best.pt found in runs/")
 
-if __name__ == '__main__':
+    print("=" * 50 + "\n")
+
+
+if __name__ == "__main__":
     main()
