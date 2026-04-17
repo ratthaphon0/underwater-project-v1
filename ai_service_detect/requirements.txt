@@ -4,3 +4,6 @@ PyYAML>=6.0
 fastapi>=0.95.0
 uvicorn>=0.22.0
 python-multipart
+requests
+numpy
+lapx>=0.5.5

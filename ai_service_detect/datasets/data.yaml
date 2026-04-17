@@ -1,7 +1,7 @@
 names:
-  0: Tilapia
+  0: Goldfish
 nc: 1
-path: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets
-test: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\test\images
-train: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\train\images
-val: E:\Project_Submarine\code\underwater-project-v1\ai_service_Dctect\datasets\valid\images
+path: E:\Project_Submarine\code\underwater-project-v1\ai_service_detect\datasets
+test: E:\Project_Submarine\code\underwater-project-v1\ai_service_detect\datasets\test\images
+train: E:\Project_Submarine\code\underwater-project-v1\ai_service_detect\datasets\train\images
+val: E:\Project_Submarine\code\underwater-project-v1\ai_service_detect\datasets\valid\images

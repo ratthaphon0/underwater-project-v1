@@ -19,9 +19,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/code
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
       - MINIO_ENDPOINT=minio:9000
       - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
       - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
@@ -32,13 +33,30 @@ services:
   ai_service:
     build:
       context: ./ai_service_detect
+    restart: unless-stopped
     volumes:
       - ./ai_service_detect:/code
-      - ./ai_service_detect/models:/code/models 
+      - ./ai_service_detect/models:/code/models
     ports:
       - "8001:8001"
+    devices:
+      # webcam passthrough — Linux host (/dev/video0 = กล้องตัวแรก)
+      # ถ้ามีกล้องหลายตัว เพิ่ม /dev/video2, /dev/video4 ได้
+      - /dev/video0:/dev/video0
+    group_add:
+      - video   # ให้ container เข้าถึง video group ของ host ได้
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      # "/dev/video0" = webcam ใน Docker (Linux)
+      # "fish_video.mp4" = local video file
+      # "rtsp://..." = Raspberry Pi via MediaMTX
+      - VIDEO_SOURCE=${VIDEO_SOURCE:-/dev/video0}
+      - CONFIDENCE=${CONFIDENCE:-0.4}
+      - BACKEND_URL=http://backend:8000/api/v1/ai/detect
+      - SESSION_URL=http://backend:8000/api/v1/sessions
+      - API_UPDATE_INTERVAL=${API_UPDATE_INTERVAL:-1.0}
+    depends_on:
+      - backend
     deploy:
       resources:
         reservations:

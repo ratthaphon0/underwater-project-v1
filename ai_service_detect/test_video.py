@@ -77,8 +77,8 @@ def main():
 
     if use_gui:
         # มี GUI — แสดงหน้าต่างด้วย
-        cv2.namedWindow("Tilapia Detection", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("Tilapia Detection", 800, 600)
+        cv2.namedWindow("Goldfish Detection", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("Goldfish Detection", 800, 600)
         print("🟢 กำลังทำงาน (GUI mode)... กด 'q' เพื่อออก")
     else:
         # ไม่มี GUI (Docker) — บันทึกอย่างเดียว
@@ -104,7 +104,7 @@ def main():
 
         if use_gui:
             # แสดงผลบนหน้าจอ
-            cv2.imshow("Tilapia Detection", annotated_frame)
+            cv2.imshow("Goldfish Detection", annotated_frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:

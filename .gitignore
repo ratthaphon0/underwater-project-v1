@@ -21,6 +21,14 @@ minio_data/
 # --- AI Detection Output ---
 ai_service_detect/runs/
 
+# --- YOLO Base Weights (ดาวน์โหลดอัตโนมัติตอน train ไม่ต้อง commit) ---
+ai_service_detect/yolov8n.pt
+ai_service_detect/yolov8s.pt
+ai_service_detect/yolov8m.pt
+
+# --- YOLO Cache Files (auto-generated ทุกครั้ง) ---
+ai_service_detect/datasets/**/*.cache
+
 # --- Editor Config ---
 .vscode/
 
