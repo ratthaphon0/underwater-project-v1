@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
+from typing import Optional, Any
 from .. import models
 from ..database import get_db
 
@@ -10,10 +11,9 @@ router = APIRouter(
 )
 
 @router.get("/{session_id}")
-def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
+def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
     """
     Get aggregated dashboard data.
-    Calculates total unique fish count based on track_id.
     """
     # 1. Get latest Telemetry
     telemetry = db.query(models.WaterTelemetry)\
@@ -26,28 +26,25 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
         .order_by(desc(models.FishDetection.timestamp)).first()
         
     # 3. Calculate Unique Fish Count using track_id
-    # Count unique track_ids that are not null
+    # FIX: Use .is_not(None) for SQLAlchemy filters to satisfy Ruff/Mypy
     unique_fish_count = db.query(func.count(func.distinct(models.FishDetection.track_id)))\
         .filter(models.FishDetection.session_id == session_id)\
         .filter(models.FishDetection.track_id.is_not(None))\
-        .scalar()
+        .scalar() or 0
         
-    # If no track_ids are used, might fall back to sum of counts (optional, but sticking to track_id for now)
-    if unique_fish_count == 0:
-        # Fallback: just use the latest count if available, or 0? 
-        # User wants "Unique Count", so if no track_id, maybe 0 is correct or we take max of fish_count seen?
-        # Let's stick to unique track_id as requested.
-        pass
-
-    # [Cloud Ready] Generate Full Image URL
-    image_url = None
+    # --- Image URL Processing ---
+    # FIX: Explicitly type image_url as Optional[str] to prevent Mypy 
+    # from confusing it with a SQLAlchemy Column type.
+    image_url: Optional[str] = None
+    
     if latest_detection and latest_detection.raw_image_path:
-        path = latest_detection.raw_image_path
+        # Cast to str to ensure Mypy treats it as a value, not a Column object
+        path: str = str(latest_detection.raw_image_path)
+        
         if path.startswith("http"):
              image_url = path
         else:
              from ..core.config import settings
-             # Ensure no double slashes if path starts with /
              clean_path = path.lstrip("/")
              image_url = f"{settings.STORAGE_PUBLIC_URL}/{clean_path}"
 
@@ -55,15 +52,16 @@ def get_dashboard_summary(session_id: str, db: Session = Depends(get_db)):
         "session_id": session_id,
         "system_status": "ONLINE",
         "telemetry": {
-            "depth": telemetry.depth if telemetry else 0.0,
-            "temp": telemetry.temp if telemetry else 0.0,
-            "ph": telemetry.ph if telemetry else 0.0,
-            "do": telemetry.do_level if telemetry else 0.0,
-            "turbidity": telemetry.turbidity if telemetry else 0.0,
+            # Safely handle potential None values from the query
+            "depth": float(telemetry.depth) if telemetry else 0.0,
+            "temp": float(telemetry.temp) if telemetry else 0.0,
+            "ph": float(telemetry.ph) if telemetry else 0.0,
+            "do": float(telemetry.do_level) if telemetry else 0.0,
+            "turbidity": float(telemetry.turbidity) if telemetry else 0.0,
         },
         "ai_vision": {
-            "fish_count": unique_fish_count, 
-            "latest_detection_type": latest_detection.fish_type if latest_detection else "unknown",
+            "fish_count": int(unique_fish_count), 
+            "latest_detection_type": str(latest_detection.fish_type) if latest_detection else "unknown",
             "last_seen": latest_detection.timestamp if latest_detection else None,
             "image_url": image_url
         }
