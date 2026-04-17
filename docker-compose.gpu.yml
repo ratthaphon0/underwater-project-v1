@@ -7,3 +7,12 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+
+  ai_service:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

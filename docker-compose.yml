@@ -57,6 +57,7 @@ services:
       - API_UPDATE_INTERVAL=${API_UPDATE_INTERVAL:-1.0}
     depends_on:
       - backend
+    #ถ้ามี NVIDIA GPU: เปิด block นี้โดยลบ # ออก
     deploy:
       resources:
         reservations:
