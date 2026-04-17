@@ -147,7 +147,7 @@ def ai_processing_thread(session_id: str):
                     "fish_count":         len(track_ids),
                     "track_id":           str(track_ids[0]),
                     "confidence":         confs[0],
-                    "fish_type":          result.names.get(classes[0], "Tilapia"),
+                    "fish_type":          result.names.get(classes[0], "Goldfish"),
                     "detection_metadata": metadata,
                 }
 

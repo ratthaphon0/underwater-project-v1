@@ -48,14 +48,14 @@ def next_index(output_dir: str) -> int:
     """หา index ถัดไปที่ยังไม่ซ้ำในโฟลเดอร์ output"""
     existing = [
         f for f in os.listdir(output_dir)
-        if f.startswith("tilapia_") and f.endswith(".jpg")
+        if f.startswith("goldfish_") and f.endswith(".jpg")
     ]
     if not existing:
         return 0
     nums = []
     for name in existing:
         try:
-            nums.append(int(name.replace("tilapia_", "").replace(".jpg", "")))
+            nums.append(int(name.replace("goldfish_", "").replace(".jpg", "")))
         except ValueError:
             pass
     return max(nums) + 1 if nums else 0
@@ -102,7 +102,7 @@ def extract_from_video(
             break
 
         if frame_idx % every_n == 0:
-            filename  = f"tilapia_{save_idx:05d}.jpg"
+            filename  = f"goldfish_{save_idx:05d}.jpg"
             save_path = os.path.join(output_dir, filename)
             if imwrite_safe(save_path, frame):
                 saved    += 1

@@ -39,7 +39,7 @@ def force_fix_yaml() -> bool:
     val_dir = "valid" if os.path.exists(os.path.join(DATASET_DIR, "valid")) else "val"
 
     # อ่าน names/nc จาก yaml เดิมถ้ามี
-    names = {0: "Tilapia"}
+    names = {0: "Goldfish"}
     nc    = 1
     if os.path.exists(DATA_YAML_PATH):
         with open(DATA_YAML_PATH, "r", encoding="utf-8") as f:
@@ -164,7 +164,7 @@ def main():
 
             # ─── Output ──────────────────────────────────────────────
             project="runs/detect",
-            name="tilapia_v2",
+            name="goldfish_v1",
             exist_ok=True,
             save_period=10,       # checkpoint ทุก 10 epochs
         )

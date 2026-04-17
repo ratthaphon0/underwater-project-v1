@@ -145,8 +145,8 @@ async def lifespan(app: FastAPI):
 # ─── FastAPI App ──────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="🐟 Tilapia Detection API",
-    description="AI Service สำหรับตรวจจับปลานิล (Nile Tilapia) จากภาพ, วิดีโอ และกล้อง live",
+    title="🐟 Goldfish Detection API",
+    description="AI Service สำหรับตรวจจับปลาทอง (Goldfish) จากภาพ, วิดีโอ และกล้อง live",
     version="2.0.0",
     lifespan=lifespan,
 )
@@ -174,7 +174,7 @@ def landing_page():
         demo_section = """
         <div class="card">
             <h2>🎬 Demo: AI Fish Detection (recorded)</h2>
-            <p style="color:#94a3b8;margin-bottom:16px;">วิดีโอที่ผ่านการตรวจจับปลานิลด้วย YOLOv8 แล้ว</p>
+            <p style="color:#94a3b8;margin-bottom:16px;">วิดีโอที่ผ่านการตรวจจับปลาทองด้วย YOLOv8 แล้ว</p>
             <video controls autoplay muted loop style="width:100%;border-radius:12px;border:1px solid #334155;">
                 <source src="/video/demo" type="video/mp4">
             </video>
@@ -192,7 +192,7 @@ def landing_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🐟 Tilapia Detection AI</title>
+        <title>🐠 Goldfish Detection AI</title>
         <style>
             * {{ margin:0; padding:0; box-sizing:border-box; }}
             body {{
@@ -270,8 +270,8 @@ def landing_page():
     <body>
     <div class="container">
         <header>
-            <h1>🐟 Tilapia Detection AI</h1>
-            <p style="color:#94a3b8;">ระบบตรวจจับปลานิล (Nile Tilapia) ด้วย YOLOv8</p>
+            <h1>🐠 Goldfish Detection AI</h1>
+            <p style="color:#94a3b8;">ระบบตรวจจับปลาทอง (Goldfish) ด้วย YOLOv8</p>
             <div style="margin-top:12px;">
                 <span class="badge">
                     <span class="dot" style="background:{"#22c55e" if model else "#ef4444"}"></span>
@@ -579,7 +579,7 @@ def serve_demo_video():
 @app.get("/api/status")
 def api_status():
     return {
-        "service":    "Tilapia Detection AI",
+        "service":    "Goldfish Detection AI",
         "version":    "2.0.0",
         "status":     "online" if model else "model_not_loaded",
         "model_path": MODEL_PATH,
@@ -602,7 +602,7 @@ def health():
 
 @app.post("/detect")
 async def detect_image(file: UploadFile = File(...), confidence: float = 0.4):
-    """อัปโหลดรูปภาพ → AI ตรวจจับปลานิล → return ผลลัพธ์"""
+    """อัปโหลดรูปภาพ → AI ตรวจจับปลาทอง → return ผลลัพธ์"""
     if not model:
         raise HTTPException(status_code=503, detail="Model ยังไม่ได้โหลด")
 
