@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Union, Any
-from pydantic import AnyHttpUrl, field_validator, ValidationInfo
+from pydantic import field_validator
 
 class Settings(BaseSettings):
     # --- Project Info ---
