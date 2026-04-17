@@ -11,6 +11,8 @@ import shutil
 import subprocess
 import threading
 import time
+import uuid
+import requests as _requests
 from datetime import datetime
 
 from video_source import VideoSource
@@ -40,30 +42,63 @@ def convert_to_h264(input_path: str, output_path: str) -> bool:
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 
-CURRENT_DIR      = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH       = os.path.join(CURRENT_DIR, "models", "best.pt")
-OUTPUT_DIR       = os.path.join(CURRENT_DIR, "runs", "detect", "api_results")
-VIDEO_RESULT_DIR = os.path.join(CURRENT_DIR, "runs", "detect", "video_result")
-DEMO_VIDEO       = os.path.join(VIDEO_RESULT_DIR, "output.mp4")
-CONFIDENCE       = float(os.getenv("CONFIDENCE", "0.4"))
+CURRENT_DIR          = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH           = os.path.join(CURRENT_DIR, "models", "best.pt")
+OUTPUT_DIR           = os.path.join(CURRENT_DIR, "runs", "detect", "api_results")
+VIDEO_RESULT_DIR     = os.path.join(CURRENT_DIR, "runs", "detect", "video_result")
+DEMO_VIDEO           = os.path.join(VIDEO_RESULT_DIR, "output.mp4")
+CONFIDENCE           = float(os.getenv("CONFIDENCE", "0.4"))
+
+# Backend sync config (ใช้ชื่อ service ใน Docker network แทน localhost)
+BACKEND_URL          = os.getenv("BACKEND_URL", "http://backend:8000/api/v1/ai/detect")
+SESSION_URL          = os.getenv("SESSION_URL", "http://backend:8000/api/v1/sessions")
+API_UPDATE_INTERVAL  = float(os.getenv("API_UPDATE_INTERVAL", "1.0"))  # วินาที
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # ─── Live Source State ────────────────────────────────────────────────────────
-# background thread อ่าน frame จาก VideoSource และเก็บ frame ล่าสุดไว้
-# ให้ /stream/live และ /detect/live เรียกใช้
 
 _live_lock            = threading.Lock()
-_live_raw_frame       = None   # frame ดิบ สำหรับ /detect/live
-_live_annotated_frame = None   # frame วาด bbox แล้ว สำหรับ /stream/live
+_live_raw_frame       = None
+_live_annotated_frame = None
 _live_source: VideoSource | None = None
 _live_thread: threading.Thread | None = None
 _live_running         = False
+_live_session_id: str | None = None
 
 
-def _live_thread_fn(src: VideoSource):
-    """Background thread — อ่าน frame และ run detection ต่อเนื่อง"""
+# ─── Backend Sync Helpers ─────────────────────────────────────────────────────
+
+def _get_or_create_session() -> str:
+    """สร้าง monitoring session ผ่าน backend API ตอน startup"""
+    try:
+        resp = _requests.post(
+            SESSION_URL,
+            json={"location_name": "AI_Live_Stream", "notes": f"source={os.getenv('VIDEO_SOURCE','0')}"},
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            sid = resp.json().get("id")
+            print(f"[live] Session created: {sid}")
+            return sid
+    except Exception as e:
+        print(f"[live] Cannot reach session API: {e} — using fallback UUID")
+    return str(uuid.uuid4())
+
+
+def _send_to_backend(payload: dict):
+    """ส่ง detection result ไป backend (fire-and-forget)"""
+    try:
+        _requests.post(BACKEND_URL, json=payload, timeout=1)
+    except Exception:
+        pass
+
+
+# ─── Live Thread ──────────────────────────────────────────────────────────────
+
+def _live_thread_fn(src: VideoSource, session_id: str):
+    """Background thread — track ปลา + sync ไป backend ทุก API_UPDATE_INTERVAL วินาที"""
     global _live_raw_frame, _live_annotated_frame, _live_running
 
     if not src.open():
@@ -71,6 +106,8 @@ def _live_thread_fn(src: VideoSource):
         return
 
     print(f"[live] ✅ Source opened: {src.info()}")
+
+    last_sync = 0.0
 
     while _live_running:
         try:
@@ -80,32 +117,60 @@ def _live_thread_fn(src: VideoSource):
             break
 
         if frame is None:
-            # กำลัง reconnect (RTSP) หรือ loop file — รอสักครู่
             time.sleep(0.05)
             continue
 
-        # run YOLO detection
         if model is not None:
-            results    = model.predict(frame, conf=CONFIDENCE, verbose=False)
-            annotated  = results[0].plot()
+            # track() แทน predict() — แต่ละปลาได้ track_id ไม่หาย
+            results   = model.track(frame, persist=True, conf=CONFIDENCE, verbose=False)
+            result    = results[0]
+            annotated = result.plot()
         else:
+            result    = None
             annotated = frame.copy()
 
         with _live_lock:
             _live_raw_frame       = frame.copy()
             _live_annotated_frame = annotated.copy()
 
+        # ─── Sync ไป backend ทุก API_UPDATE_INTERVAL วินาที ───────────────
+        now = time.time()
+        if result is not None and (now - last_sync) >= API_UPDATE_INTERVAL:
+            last_sync = now
+            if result.boxes and result.boxes.id is not None:
+                track_ids = result.boxes.id.int().cpu().tolist()
+                classes   = result.boxes.cls.int().cpu().tolist()
+                confs     = result.boxes.conf.float().cpu().tolist()
+                boxes     = result.boxes.xywh.tolist()
+
+                payload = {
+                    "session_id":  session_id,
+                    "fish_count":  len(track_ids),
+                    "track_id":    str(track_ids[0]),
+                    "confidence":  round(confs[0], 4),
+                    "fish_type":   result.names.get(classes[0], "Goldfish"),
+                    "detection_metadata": [
+                        {"track_id": tid, "class": classes[i],
+                         "conf": confs[i], "bbox": boxes[i]}
+                        for i, tid in enumerate(track_ids)
+                    ],
+                }
+                threading.Thread(
+                    target=_send_to_backend, args=(payload,), daemon=True
+                ).start()
+
     src.release()
     print("[live] Thread stopped")
 
 
 def start_live_source():
-    global _live_source, _live_thread, _live_running
-    _live_running = True
-    _live_source  = VideoSource.from_env()
-    _live_thread  = threading.Thread(
+    global _live_source, _live_thread, _live_running, _live_session_id
+    _live_session_id = _get_or_create_session()
+    _live_running    = True
+    _live_source     = VideoSource.from_env()
+    _live_thread     = threading.Thread(
         target=_live_thread_fn,
-        args=(_live_source,),
+        args=(_live_source, _live_session_id),
         daemon=True,
         name="live-source",
     )

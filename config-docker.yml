@@ -16,11 +16,14 @@ ingress:
   - hostname: storage.submarines.app
     service: http://localhost:9001
 
-  # AI Service - ตรวจจับปลา (timeout ยาวสำหรับประมวลผลวิดีโอ)
+  # AI Service - ตรวจจับปลา
+  # connectTimeout: 60s  — รอ container เปิด model (YOLO โหลดช้า)
+  # keepAliveTimeout: 5m — video upload ใหญ่ใช้เวลานาน
   - hostname: ai.submarines.app
     service: http://localhost:8001
     originRequest:
-      connectTimeout: 30s
+      connectTimeout: 60s
+      keepAliveTimeout: 300s
       noTLSVerify: false
       httpHostHeader: ai.submarines.app
 
